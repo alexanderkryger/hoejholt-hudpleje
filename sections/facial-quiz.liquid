@@ -1,0 +1,1896 @@
+{% comment %}
+  ===========================================================
+  SECTION: Facialmatch Quiz
+  FILE: sections/facial-quiz.liquid
+
+  HOW TO ADD TO SHOPIFY:
+  1. Admin > Online Store > Themes > Edit Code
+  2. Under "Sections" click "Add a new section"
+  3. Name it "facial-quiz"
+  4. Paste this file > Save
+  5. Upload Background.jpg via Settings > Files
+  6. Customize > Add section > "Facialmatch Quiz"
+  7. Select your Background.jpg in the section settings
+
+  HOW TO EDIT: scroll to the JavaScript section.
+  Questions, scores, and treatments are in clearly marked objects.
+  ===========================================================
+{% endcomment %}
+
+<section id="fq" class="fq" data-section-id="{{ section.id }}">
+  <div class="fq__bg">
+    {%- if section.settings.bg_image != blank -%}
+      <img src="{{ section.settings.bg_image | image_url: width: 1920 }}" alt="" class="fq__bg-img" loading="eager">
+    {%- endif -%}
+    <div class="fq__bg-arc"></div>
+  </div>
+
+  <div class="fq__shapes-layer">
+    <div class="fq__shape fq__shape--1"></div>
+    <div class="fq__shape fq__shape--2"></div>
+    <div class="fq__shape fq__shape--3"></div>
+    <div class="fq__shape fq__shape--4"></div>
+    <div class="fq__shape fq__shape--5"></div>
+  </div>
+
+  <div class="fq__viewport">
+    <div class="fq__stage">
+
+      <div class="fq__screen fq__screen--active" data-screen="intro">
+        <div class="fq__intro">
+          <div class="fq__intro-text">
+            <div class="fq__logo">
+              <span class="fq__logo-text">Facialmatch</span>
+              <span class="fq__logo-line"></span>
+            </div>
+            <p class="fq__heading fq__heading--light">{{ section.settings.intro_line2 | default: "Lad os finde den perfekte ansigtsbehandling til dig" }}</p>
+            <button class="fq__start-cta" data-action="start">Start Facialmatch</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="profile-name">
+        <div class="fq__profile-step fq__anim">
+          <h2 class="fq__question-title">Hvad er dit navn?</h2>
+          <div class="fq__input-wrap">
+            <input type="text" class="fq__input" data-name-input placeholder="Indtast dit navn" autocomplete="given-name" spellcheck="false" maxlength="40">
+            <div class="fq__input-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="profile-gender">
+        <div class="fq__profile-step fq__anim">
+          <h2 class="fq__question-title">Tilføj køn</h2>
+          <div class="fq__profile-center">
+            <div class="fq__orb fq__orb--lg fq__orb--mand" data-gender-orb></div>
+            <span class="fq__profile-name" data-profile-name-gender></span>
+          </div>
+          <div class="fq__options" data-gender-options>
+            <button class="fq__option" data-gender="Kvinde">Kvinde</button>
+            <button class="fq__option" data-gender="Mand">Mand</button>
+            <button class="fq__option" data-gender="Andet">Andet</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="profile-age">
+        <div class="fq__profile-step fq__anim">
+          <h2 class="fq__question-title">Hvor gammel er du?</h2>
+          <div class="fq__age-card">
+            <span class="fq__age-label" data-age-label></span>
+            <div class="fq__age-orb-wrap"><div class="fq__orb fq__orb--md fq__orb--mand" data-gender-orb></div></div>
+            <div class="fq__age-display">
+              <span class="fq__age-value" data-age-value>30</span>
+              <span class="fq__age-unit">ÅR</span>
+            </div>
+            <div class="fq__age-controls">
+              <button class="fq__age-btn" data-age-action="minus" aria-label="Minus">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button class="fq__age-btn" data-age-action="plus" aria-label="Plus">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="welcome">
+        <div class="fq__welcome">
+          <h2 class="fq__welcome-greeting" data-welcome-name></h2>
+          <p class="fq__welcome-sub">Lad os finde det perfekte facialmatch</p>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="quiz">
+        <h2 class="fq__question-title" data-q-title></h2>
+        <div class="fq__question-body" data-q-body></div>
+      </div>
+
+      <div class="fq__screen" data-screen="profile-pregnant">
+        <div class="fq__profile-step fq__anim">
+          <h2 class="fq__question-title">Er du gravid, eller har du været det for nylig?</h2>
+          <div class="fq__profile-center">
+            <div class="fq__orb fq__orb--lg fq__orb--kvinde" data-gender-orb></div>
+            <span class="fq__profile-name" data-profile-name-pregnant></span>
+          </div>
+          <div class="fq__options" data-pregnant-options>
+            <button class="fq__option" data-pregnant="yes">Ja, jeg er gravid nu</button>
+            <button class="fq__option" data-pregnant="recent">Ja, inden for de seneste 6 måneder</button>
+            <button class="fq__option" data-pregnant="no">Nej</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="loading">
+        <div class="fq__loading">
+          <div class="fq__spinner">
+            <div class="fq__spinner-outer"></div>
+            <div class="fq__spinner-inner"></div>
+            <div class="fq__spinner-cover"></div>
+            <div class="fq__spinner-ball" data-gender-orb>
+              <div class="fq__spinner-ball-tex"></div>
+              <div class="fq__spinner-ball-shadow-out"></div>
+              <div class="fq__spinner-ball-shadow-in"></div>
+              <div class="fq__spinner-ball-shadow-side"></div>
+            </div>
+          </div>
+          <div class="fq__loading-text">
+            <p class="fq__loading-line" data-load-line="0">Analyserer dine svar</p>
+            <p class="fq__loading-line" data-load-line="1">Matcher med behandlinger</p>
+            <p class="fq__loading-line" data-load-line="2">Bygger din personlige anbefaling</p>
+          </div>
+          <div class="fq__loading-bar">
+            <div class="fq__loading-bar-fill" data-load-bar></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fq__screen" data-screen="result">
+        <div class="fq__result">
+          <div class="fq__result-badge">Din anbefaling</div>
+          <h2 class="fq__result-greeting" data-r-greeting></h2>
+          <h2 class="fq__result-name" data-r-name></h2>
+          <p class="fq__result-desc" data-r-desc></p>
+          <div class="fq__result-meta">
+            <span data-r-duration></span>
+            <span class="fq__result-dot"></span>
+            <span data-r-price></span>
+          </div>
+          <a href="#" class="fq__cta" data-r-cta>{{ section.settings.cta_text | default: "Book behandling" }}</a>
+          <button class="fq__save-btn" data-action="save-open">Gem Resultat</button>
+          <button class="fq__retake" data-action="retake">Tag quizzen igen</button>
+          <p class="fq__result-disclaimer">Denne anbefaling er vejledende. Din hud vil altid blive grundigt vurderet inden behandling, så vi sikrer det bedste resultat for dig.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="fq__modal-overlay" data-save-overlay>
+    <div class="fq__modal">
+      <button class="fq__modal-close" data-action="save-close" aria-label="Luk">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div class="fq__modal-body" data-save-body>
+        <div class="fq__modal-icon">
+          <div class="fq__orb fq__orb--sm fq__orb--mand" data-gender-orb></div>
+        </div>
+        <h3 class="fq__modal-title">Gem dit Resultat</h3>
+        <p class="fq__modal-desc">Indtast din e-mail, så sender vi dit resultat, så du kan vende tilbage til det</p>
+        <div class="fq__modal-form" data-mc-form>
+          <div class="fq__modal-field">
+            <input type="text" class="fq__modal-input" data-mc-fname placeholder="Dit navn" autocomplete="given-name" maxlength="40">
+          </div>
+          <div class="fq__modal-field">
+            <input type="email" class="fq__modal-input" data-mc-email placeholder="Din email" autocomplete="email" required>
+          </div>
+          <input type="hidden" data-mc-facematch value="">
+          <input type="hidden" name="tags" value="6678956">
+        </div>
+        <button class="fq__modal-submit" data-action="save-submit" disabled>Gem mit Resultat</button>
+      </div>
+      <div class="fq__modal-success" data-save-success>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+        <p>Dit resultat er sendt til din mail!</p>
+      </div>
+      <div class="fq__modal-error" data-save-error>
+        <p>Noget gik galt — prøv igen</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="fq__bar">
+    <div class="fq__bar-left">
+      <button class="fq__bar-nav fq__bar-nav--back" data-action="back" disabled aria-label="Tilbage">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      </button>
+    </div>
+    <div class="fq__bar-center">
+      <span class="fq__bar-label" data-bar-label>Facialmatch</span>
+      <span class="fq__bar-step" data-bar-step></span>
+    </div>
+    <div class="fq__bar-right">
+      <button class="fq__bar-nav fq__bar-nav--next" data-action="next" aria-label="Næste">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="fq__progress">
+    <div class="fq__progress-fill" data-progress></div>
+  </div>
+</section>
+
+<style>
+@font-face {
+  font-family: 'JUST Sans';
+  src: url({{ 'JUST Sans SemiBold.woff2' | asset_url }}) format('woff2'),
+       url({{ 'JUST Sans SemiBold.woff' | asset_url }}) format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JUST Sans';
+  src: url({{ 'JUST Sans Regular.woff2' | asset_url }}) format('woff2'),
+       url({{ 'JUST Sans Regular.woff' | asset_url }}) format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --fq-bg: #0A0706;
+  --fq-text: #FFFFFFEE;
+  --fq-text-dim: #FFFFFF66;
+  --fq-text-muted: #FFFFFF40;
+  --fq-accent: #C4A1D4;
+  --fq-accent-hover: #D4B5E0;
+  --fq-accent-glow: rgba(129,90,160,0.30);
+  --fq-glass: rgba(255,255,255,0.03);
+  --fq-glass-border: rgba(255,255,255,0.08);
+  --fq-glass-hover: rgba(255,255,255,0.06);
+  --fq-bar-bg: rgba(12,8,6,0.80);
+  --fq-serif: 'JUST Sans', -apple-system, sans-serif;
+  --fq-sans: 'JUST Sans', -apple-system, sans-serif;
+  --fq-selected-bg: rgba(129,90,160,0.10);
+  --fq-selected-border: rgba(180,140,210,0.50);
+}
+
+.fq {
+  position: relative; width: 100%;
+  min-height: 100vh; min-height: 100dvh;
+  overflow: hidden;
+  font-family: var(--fq-sans);
+  color: var(--fq-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.fq__bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: #0A0706;
+}
+.fq__bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fq__bg-arc {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 0%, rgba(99,102,241,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 70% 100%, rgba(244,63,94,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 80% at 50% 50%, rgba(30,18,12,0.50) 0%, transparent 70%);
+  pointer-events: none;
+}
+.fq__bg::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to top, #0A0706, transparent 30%, transparent 70%, rgba(10,7,6,0.80));
+  pointer-events: none;
+}
+
+.fq__viewport {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; min-height: 100dvh;
+  padding: 60px 24px 130px;
+}
+.fq__stage { width: 100%; max-width: 640px; position: relative; }
+
+.fq__screen {
+  display: none; opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s cubic-bezier(.23,1,.32,1), transform 0.5s cubic-bezier(.23,1,.32,1);
+}
+.fq__screen--active { display: block; opacity: 1; transform: translateY(0); }
+
+.fq__heading {
+  font-family: var(--fq-serif); font-size: clamp(24px, 4.5vw, 36px);
+  font-weight: 400; line-height: 1.35; text-align: center; color: var(--fq-text); margin: 0;
+}
+.fq__heading--light { color: rgba(255,255,255,0.40); margin-top: 16px; font-size: clamp(15px, 2.5vw, 18px); font-weight: 400; letter-spacing: 0.01em; }
+
+/* ---- Logo ---- */
+.fq__logo {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.fq__logo-text {
+  font-family: var(--fq-serif);
+  font-size: clamp(36px, 7vw, 56px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.80));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.fq__logo-line {
+  width: 48px; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  border-radius: 2px;
+}
+
+/* ---- Intro ---- */
+.fq__intro {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 55vh; position: relative;
+}
+.fq__intro-text { text-align: center; max-width: 480px; z-index: 2; }
+
+/* ---- Start CTA ---- */
+.fq__start-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-top: 32px;
+  padding: 16px 44px; border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  color: var(--fq-text); font-family: var(--fq-sans);
+  font-size: 15px; font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.35s cubic-bezier(.23,1,.32,1);
+  -webkit-appearance: none; appearance: none;
+}
+.fq__start-cta:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.20);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255,255,255,0.06);
+}
+
+/* ---- Welcome screen ---- */
+.fq__welcome {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 50vh;
+  text-align: center; gap: 16px;
+}
+.fq__welcome-greeting {
+  font-family: var(--fq-serif);
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 600; line-height: 1.2;
+  margin: 0;
+  background: linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.80));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0; transform: translateY(20px);
+  animation: fqWelcomeIn 1s 0.2s cubic-bezier(.23,1,.32,1) forwards;
+}
+.fq__welcome-sub {
+  font-family: var(--fq-sans);
+  font-size: clamp(15px, 2.5vw, 18px);
+  font-weight: 400; color: rgba(255,255,255,0.40);
+  margin: 0; letter-spacing: 0.01em;
+  opacity: 0; transform: translateY(16px);
+  animation: fqWelcomeIn 1s 0.6s cubic-bezier(.23,1,.32,1) forwards;
+}
+
+@keyframes fqWelcomeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Elegant Shapes (intro) ---- */
+.fq__shapes-layer {
+  position: absolute; inset: 0; z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+.fq__shape {
+  position: absolute; border-radius: 9999px;
+  background: linear-gradient(to right, rgba(255,255,255,0.08), transparent);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  border: 2px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px 0 rgba(255,255,255,0.10);
+  will-change: transform;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+.fq__shape::after {
+  content: ''; position: absolute; inset: 0; border-radius: 9999px;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%);
+}
+
+.fq__shape--1 {
+  width: 55vw; height: 13vw; max-height: 160px;
+  left: -18vw; top: 12%;
+  background: linear-gradient(to right, rgba(99,102,241,0.15), transparent);
+  animation: fqShapeIn1 2.4s 0.3s cubic-bezier(.23,.86,.39,.96) forwards, fqShapeDrift 12s 2.7s ease-in-out infinite;
+}
+.fq__shape--2 {
+  width: 50vw; height: 11vw; max-height: 140px;
+  right: -15vw; bottom: 8%;
+  background: linear-gradient(to right, rgba(244,63,94,0.15), transparent);
+  animation: fqShapeIn2 2.4s 0.5s cubic-bezier(.23,.86,.39,.96) forwards, fqShapeDrift 14s 2.9s ease-in-out infinite;
+}
+.fq__shape--3 {
+  width: 38vw; height: 9vw; max-height: 100px;
+  left: -12vw; bottom: 25%;
+  background: linear-gradient(to right, rgba(139,92,246,0.15), transparent);
+  animation: fqShapeIn3 2.4s 0.4s cubic-bezier(.23,.86,.39,.96) forwards, fqShapeDrift 11s 2.8s ease-in-out infinite;
+}
+.fq__shape--4 {
+  width: 30vw; height: 7vw; max-height: 80px;
+  right: -10vw; top: 5%;
+  background: linear-gradient(to right, rgba(245,158,11,0.15), transparent);
+  animation: fqShapeIn4 2.4s 0.6s cubic-bezier(.23,.86,.39,.96) forwards, fqShapeDrift 13s 3.0s ease-in-out infinite;
+}
+.fq__shape--5 {
+  width: 22vw; height: 5vw; max-height: 60px;
+  left: -5vw; top: 2%;
+  background: linear-gradient(to right, rgba(6,182,212,0.15), transparent);
+  animation: fqShapeIn5 2.4s 0.7s cubic-bezier(.23,.86,.39,.96) forwards, fqShapeDrift 15s 3.1s ease-in-out infinite;
+}
+
+@keyframes fqShapeIn1 {
+  from { opacity: 0; transform: translateY(-150px) rotate(-3deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(12deg); }
+}
+@keyframes fqShapeIn2 {
+  from { opacity: 0; transform: translateY(-150px) rotate(-30deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(-15deg); }
+}
+@keyframes fqShapeIn3 {
+  from { opacity: 0; transform: translateY(-150px) rotate(-23deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(-8deg); }
+}
+@keyframes fqShapeIn4 {
+  from { opacity: 0; transform: translateY(-150px) rotate(5deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(20deg); }
+}
+@keyframes fqShapeIn5 {
+  from { opacity: 0; transform: translateY(-150px) rotate(-40deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(-25deg); }
+}
+
+@keyframes fqShapeDrift {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 15px; }
+}
+
+/* ---- Profile orbs (kept for inner screens) ---- */
+.fq__orb {
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(255,255,255,0.06), inset 0 -4px 14px rgba(0,0,0,0.15), inset 0 6px 16px rgba(255,255,255,0.12);
+}
+.fq__orb--lg { width: 120px; height: 120px; }
+.fq__orb--md { width: 64px; height: 64px; }
+.fq__orb--sm { width: 40px; height: 40px; }
+.fq__orb--xs { width: 24px; height: 24px; }
+
+.fq__orb--rose    { background: radial-gradient(circle at 38% 30%, rgba(99,102,241,0.30), rgba(99,102,241,0.15), rgba(30,30,50,0.6)); }
+.fq__orb--bronze  { background: radial-gradient(circle at 38% 30%, rgba(245,158,11,0.30), rgba(245,158,11,0.15), rgba(40,30,10,0.6)); }
+.fq__orb--blush   { background: radial-gradient(circle at 38% 30%, rgba(244,63,94,0.30), rgba(244,63,94,0.15), rgba(40,15,20,0.6)); }
+.fq__orb--peach   { background: radial-gradient(circle at 38% 30%, rgba(139,92,246,0.30), rgba(139,92,246,0.15), rgba(30,20,50,0.6)); }
+.fq__orb--mauve   { background: radial-gradient(circle at 38% 30%, rgba(168,130,200,0.30), rgba(139,92,246,0.15), rgba(30,20,40,0.6)); }
+.fq__orb--sand    { background: radial-gradient(circle at 38% 30%, rgba(6,182,212,0.30), rgba(6,182,212,0.15), rgba(10,30,35,0.6)); }
+.fq__orb--copper  { background: radial-gradient(circle at 38% 30%, rgba(244,63,94,0.25), rgba(200,80,80,0.12), rgba(35,15,15,0.6)); }
+
+/* Gender-reactive orb colors */
+.fq__orb--mand    { background: radial-gradient(circle at 38% 30%, rgba(99,130,241,0.40), rgba(70,90,180,0.25), rgba(20,25,50,0.7)); transition: background 0.6s ease; }
+.fq__orb--kvinde  { background: radial-gradient(circle at 38% 30%, rgba(220,100,120,0.40), rgba(180,70,90,0.25), rgba(50,18,25,0.7)); transition: background 0.6s ease; }
+.fq__orb--andet   { background: radial-gradient(circle at 38% 30%, rgba(180,170,160,0.35), rgba(140,130,120,0.20), rgba(40,35,30,0.7)); transition: background 0.6s ease; }
+
+.fq__question-title {
+  font-family: var(--fq-serif); font-size: clamp(22px, 4vw, 32px);
+  font-weight: 400; text-align: center; margin: 0 0 48px; line-height: 1.3;
+}
+
+/* ---- Info tooltip ---- */
+.fq__info-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: none; color: var(--fq-text-muted);
+  font-family: var(--fq-sans); font-size: 12px; font-weight: 600;
+  cursor: pointer; vertical-align: middle; margin-left: 8px;
+  transition: all 0.2s; -webkit-appearance: none; appearance: none;
+  position: relative; top: -1px;
+}
+.fq__info-toggle:hover { border-color: rgba(255,255,255,0.30); color: var(--fq-text-dim); }
+.fq__info-box {
+  max-width: 420px; margin: -28px auto 36px;
+  padding: 16px 20px; border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-family: var(--fq-sans); font-size: 13px; line-height: 1.6;
+  color: var(--fq-text-muted); text-align: center;
+  display: none;
+}
+.fq__info-box--open { display: block; }
+
+/* ---- Result disclaimer ---- */
+.fq__result-disclaimer {
+  margin-top: 32px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--fq-sans); font-size: 12px; line-height: 1.6;
+  color: var(--fq-text-muted); text-align: center;
+  max-width: 340px;
+}
+
+/* ---- Profile steps ---- */
+.fq__profile-step { display: flex; flex-direction: column; align-items: center; }
+.fq__profile-center { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 40px; }
+.fq__profile-name { font-family: var(--fq-sans); font-size: 16px; font-weight: 500; color: var(--fq-text); letter-spacing: 0.02em; }
+
+.fq__input-wrap { width: 100%; max-width: 340px; position: relative; }
+.fq__input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: var(--fq-sans); font-size: 18px; font-weight: 500;
+  color: var(--fq-text); text-align: center; padding: 16px 0;
+  caret-color: var(--fq-accent);
+}
+.fq__input::placeholder { color: var(--fq-text-muted); }
+.fq__input-line { width: 100%; height: 1px; background: var(--fq-glass-border); transition: background 0.3s; }
+.fq__input:focus ~ .fq__input-line { background: var(--fq-accent); }
+
+/* ---- Age card ---- */
+.fq__age-card {
+  border-radius: 20px; border: 1px solid var(--fq-glass-border);
+  background: var(--fq-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  padding: 32px 40px 24px; display: flex; flex-direction: column; align-items: center;
+  gap: 8px; width: 100%; max-width: 260px;
+}
+.fq__age-label { font-size: 15px; font-weight: 500; color: var(--fq-text); margin-bottom: 4px; }
+.fq__age-orb-wrap { margin-bottom: 8px; }
+.fq__age-display { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fq__age-value { font-family: var(--fq-serif); font-size: 64px; font-weight: 400; color: var(--fq-text); line-height: 1; min-width: 80px; text-align: center; }
+.fq__age-unit { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fq-text-muted); }
+.fq__age-controls { display: flex; gap: 12px; margin-top: 16px; }
+.fq__age-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--fq-glass-border); background: transparent;
+  color: var(--fq-text-dim); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; -webkit-appearance: none; appearance: none;
+}
+.fq__age-btn:hover { border-color: rgba(255,255,255,0.30); color: var(--fq-text); }
+.fq__age-btn:active { transform: scale(0.92); }
+
+/* ---- Options ---- */
+.fq__question-body { display: flex; flex-direction: column; align-items: center; }
+.fq__options { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 380px; }
+
+.fq__option {
+  width: 100%; padding: 16px 28px; border-radius: 12px;
+  border: 1px solid var(--fq-glass-border); background: var(--fq-glass);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  color: var(--fq-text); font-family: var(--fq-sans);
+  font-size: 15px; font-weight: 500; text-align: center;
+  cursor: pointer; transition: all 0.25s cubic-bezier(.23,1,.32,1);
+  user-select: none; -webkit-appearance: none; appearance: none; outline: none;
+}
+.fq__option:hover { background: var(--fq-glass-hover); border-color: rgba(255,255,255,0.24); transform: translateY(-1px); }
+.fq__option--selected {
+  border-color: var(--fq-selected-border);
+  box-shadow: 0 0 0 1px var(--fq-selected-border), 0 0 24px var(--fq-accent-glow);
+  background: var(--fq-selected-bg);
+}
+.fq__option--selected:hover { border-color: var(--fq-selected-border); background: rgba(129,90,160,0.14); }
+
+.fq__cards {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px; width: 100%; max-width: 520px;
+}
+.fq__card {
+  border-radius: 16px; border: 1px solid var(--fq-glass-border);
+  background: var(--fq-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  padding: 28px 16px; display: flex; flex-direction: column;
+  align-items: center; gap: 10px; cursor: pointer;
+  transition: all 0.25s cubic-bezier(.23,1,.32,1); user-select: none;
+}
+.fq__card:hover { border-color: rgba(255,255,255,0.22); background: var(--fq-glass-hover); transform: translateY(-2px); }
+.fq__card--selected {
+  border-color: var(--fq-selected-border);
+  box-shadow: 0 0 0 1px var(--fq-selected-border), 0 0 24px var(--fq-accent-glow);
+}
+.fq__card-label { font-size: 15px; font-weight: 600; color: var(--fq-text); text-align: center; line-height: 1.3; }
+.fq__card-sub { font-size: 12px; color: var(--fq-text-muted); text-align: center; line-height: 1.4; }
+
+/* ---- Result ---- */
+.fq__result {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  animation: fqScaleIn 0.6s cubic-bezier(.23,1,.32,1) forwards;
+}
+.fq__result-badge {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--fq-accent); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.fq__result-badge::before, .fq__result-badge::after {
+  content: ''; width: 28px; height: 1px; background: var(--fq-accent); opacity: 0.6;
+}
+.fq__result-greeting {
+  font-family: var(--fq-serif); font-size: clamp(18px, 3vw, 24px);
+  font-weight: 400; margin: 0 0 4px; line-height: 1.3; color: var(--fq-text-dim);
+}
+.fq__result-name {
+  font-family: var(--fq-serif); font-size: clamp(28px, 5vw, 42px);
+  font-weight: 400; margin: 0 0 16px; line-height: 1.2;
+}
+.fq__result-desc {
+  font-size: 15px; line-height: 1.7; color: var(--fq-text-dim);
+  max-width: 420px; margin: 0 0 24px;
+}
+.fq__result-meta {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: var(--fq-text-muted); margin-bottom: 36px;
+}
+.fq__result-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--fq-text-muted); }
+
+.fq__cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 16px 44px; border-radius: 12px;
+  border: 1px solid var(--fq-accent);
+  background: rgba(99,102,241,0.10);
+  backdrop-filter: blur(12px);
+  color: var(--fq-text); font-family: var(--fq-sans);
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  transition: all 0.3s cubic-bezier(.23,1,.32,1); cursor: pointer;
+}
+.fq__cta:hover { background: rgba(99,102,241,0.18); box-shadow: 0 0 30px rgba(99,102,241,0.15); transform: translateY(-1px); }
+
+.fq__retake {
+  margin-top: 16px; background: none; border: none;
+  color: var(--fq-text-muted); font-family: var(--fq-sans);
+  font-size: 13px; cursor: pointer; padding: 8px 16px; transition: color 0.2s;
+}
+.fq__retake:hover { color: var(--fq-text-dim); }
+
+/* ---- Bottom bar ---- */
+.fq__bar {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; align-items: center; justify-content: space-between;
+  width: calc(100% - 48px); max-width: 480px;
+  padding: 12px 16px; border-radius: 20px;
+  background: var(--fq-bar-bg);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.50);
+}
+.fq__bar-left, .fq__bar-right { display: flex; align-items: center; }
+.fq__bar-center { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.fq__bar-label { font-size: 13px; font-weight: 500; color: var(--fq-text); }
+.fq__bar-step { font-size: 11px; color: var(--fq-text-muted); }
+
+.fq__bar-nav {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.14); background: transparent;
+  color: var(--fq-text-dim); display: flex; align-items: center;
+  justify-content: center; cursor: pointer; transition: all 0.2s;
+}
+.fq__bar-nav:hover:not(:disabled) { border-color: rgba(255,255,255,0.30); color: var(--fq-text); }
+.fq__bar-nav:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* ---- Progress ---- */
+.fq__progress {
+  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+  z-index: 101; background: rgba(255,255,255,0.06);
+}
+.fq__progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, rgba(99,102,241,0.6), rgba(244,63,94,0.4));
+  border-radius: 0 3px 3px 0;
+  transition: width 0.5s cubic-bezier(.23,1,.32,1);
+}
+
+@keyframes fqScaleIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fqFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fq__anim { animation: fqFadeUp 0.45s cubic-bezier(.23,1,.32,1) forwards; }
+
+/* ---- Save result button ---- */
+.fq__save-btn {
+  margin-top: 12px; background: none; border: 1px solid var(--fq-glass-border);
+  color: var(--fq-text-dim); font-family: var(--fq-sans);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: 12px 32px; border-radius: 10px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(.23,1,.32,1);
+  -webkit-appearance: none; appearance: none;
+}
+.fq__save-btn:hover {
+  border-color: rgba(255,255,255,0.24); color: var(--fq-text);
+  background: var(--fq-glass); transform: translateY(-1px);
+}
+
+/* ---- Save modal ---- */
+.fq__modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.60);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.fq__modal-overlay--open { opacity: 1; pointer-events: auto; }
+
+.fq__modal {
+  position: relative;
+  width: 100%; max-width: 380px;
+  background: rgba(18,12,10,0.95);
+  backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(.23,1,.32,1);
+}
+.fq__modal-overlay--open .fq__modal { transform: translateY(0) scale(1); }
+
+.fq__modal-close {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.4); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.fq__modal-close:hover { background: rgba(255,255,255,0.10); color: var(--fq-text); }
+
+.fq__modal-body { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.fq__modal-icon { margin-bottom: 16px; }
+.fq__modal-title {
+  font-family: var(--fq-serif); font-size: 22px; font-weight: 600;
+  color: var(--fq-text); margin: 0 0 8px; text-align: center;
+}
+.fq__modal-desc {
+  font-size: 13px; line-height: 1.5; color: var(--fq-text-muted);
+  text-align: center; margin: 0 0 28px; max-width: 280px;
+}
+.fq__modal-form { width: 100%; display: flex; flex-direction: column; }
+.fq__modal-field { border: 1px solid rgba(255,255,255,0.08); border-bottom: none; }
+.fq__modal-field:first-child { border-radius: 12px 12px 0 0; }
+.fq__modal-field:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 0 0 12px 12px; }
+.fq__modal-input {
+  width: 100%; background: rgba(255,255,255,0.03); box-sizing: border-box;
+  border: none; outline: none;
+  font-family: var(--fq-sans); font-size: 14px; font-weight: 500;
+  color: var(--fq-text); padding: 16px 20px;
+  caret-color: var(--fq-accent);
+}
+.fq__modal-input::placeholder { color: var(--fq-text-muted); }
+.fq__modal-input:focus { background: rgba(255,255,255,0.05); }
+.fq__modal-field:first-child .fq__modal-input { border-radius: 12px 12px 0 0; }
+.fq__modal-field:last-of-type .fq__modal-input { border-radius: 0 0 12px 12px; }
+
+.fq__modal-submit {
+  width: 100%; margin-top: 24px; padding: 15px 24px;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  font-family: var(--fq-sans); font-size: 14px; font-weight: 600;
+  color: var(--fq-text); cursor: pointer;
+  transition: all 0.25s cubic-bezier(.23,1,.32,1);
+  -webkit-appearance: none; appearance: none;
+}
+.fq__modal-submit:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+.fq__modal-submit:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.fq__modal-success, .fq__modal-error {
+  display: none; flex-direction: column; align-items: center; gap: 14px;
+  padding: 20px 0 8px; text-align: center;
+}
+.fq__modal-success { color: var(--fq-accent); }
+.fq__modal-error { color: rgba(244,63,94,0.8); }
+.fq__modal-success p, .fq__modal-error p {
+  font-size: 15px; font-weight: 500; color: var(--fq-text-dim); margin: 0;
+}
+.fq__modal-success--visible, .fq__modal-error--visible { display: flex; }
+
+/* ---- Slider / Draggable ---- */
+.fq__slider {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 32px; width: 100%; max-width: 480px;
+  user-select: none; -webkit-user-select: none;
+}
+.fq__slider-value {
+  font-family: var(--fq-serif); font-size: clamp(28px, 6vw, 44px);
+  font-weight: 600; color: var(--fq-text);
+  text-align: center; line-height: 1.2;
+  min-height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fq__slider-value--exit { opacity: 0; transform: translateY(-6px); }
+.fq__slider-middle {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.fq__slider-name {
+  font-family: var(--fq-sans); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fq-text-muted); text-align: center;
+}
+.fq__slider-track-wrap {
+  width: 100%; max-width: 340px; position: relative;
+  padding: 24px 0; cursor: pointer;
+  touch-action: none;
+}
+.fq__slider-track {
+  width: 100%; height: 1px;
+  background: var(--fq-glass-border);
+  position: relative;
+}
+.fq__slider-track-fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  background: linear-gradient(90deg, var(--fq-accent), rgba(99,102,241,0.3));
+  border-radius: 1px;
+  transition: width 0.3s cubic-bezier(.23,1,.32,1);
+}
+.fq__slider-track-wrap--dragging .fq__slider-track-fill {
+  transition: none;
+}
+.fq__slider-snap {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fq-text-muted);
+  opacity: 0.4;
+  transition: opacity 0.2s, background 0.2s;
+}
+.fq__slider-snap--passed {
+  background: var(--fq-accent); opacity: 0.7;
+}
+.fq__slider-thumb {
+  position: absolute; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, rgba(99,130,241,0.5), rgba(70,90,180,0.3), rgba(20,25,50,0.6));
+  box-shadow: 0 0 30px rgba(0,0,0,0.12), inset 0 -3px 10px rgba(0,0,0,0.08), inset 0 4px 12px rgba(255,255,255,0.25);
+  cursor: grab;
+  transition: left 0.3s cubic-bezier(.23,1,.32,1), transform 0.15s ease, background 0.6s ease;
+  z-index: 2;
+}
+.fq__slider-thumb--kvinde { background: radial-gradient(circle at 38% 30%, rgba(220,100,120,0.5), rgba(180,70,90,0.3), rgba(50,18,25,0.6)); }
+.fq__slider-thumb--andet { background: radial-gradient(circle at 38% 30%, rgba(180,170,160,0.45), rgba(140,130,120,0.25), rgba(40,35,30,0.6)); }
+.fq__slider-track-wrap--dragging .fq__slider-thumb {
+  transition: none;
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.fq__slider-labels {
+  display: flex; justify-content: space-between;
+  width: 100%; max-width: 340px;
+  margin-top: -8px;
+}
+.fq__slider-label-edge {
+  font-family: var(--fq-sans); font-size: 11px;
+  color: var(--fq-text-muted); max-width: 80px;
+  line-height: 1.3;
+}
+.fq__slider-label-edge:last-child { text-align: right; }
+
+/* ---- Loading animation ---- */
+.fq__loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 40vh; gap: 48px;
+}
+
+/* Orbital spinner */
+.fq__spinner {
+  position: relative;
+  width: 160px; height: 160px;
+}
+.fq__spinner-outer {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.06);
+}
+.fq__spinner-inner {
+  position: absolute; inset: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.04);
+}
+.fq__spinner-cover {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(10,7,6,0.95) 50%,
+    rgba(10,7,6,0.95) 100%
+  );
+  animation: fqSpinCover 2.4s linear infinite;
+}
+.fq__spinner-ball {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 40px; height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  animation: fqSpinBall 2.4s linear infinite;
+  z-index: 2;
+}
+.fq__spinner-ball-tex {
+  position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+}
+.fq__spinner-ball-tex::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 200%; height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0px,
+    rgba(255,255,255,0.06) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  animation: fqSpinBallTex 2.4s linear infinite;
+}
+.fq__spinner-ball-shadow-out {
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  animation: fqSpinBallShadowOut 2.4s linear infinite;
+}
+.fq__spinner-ball-shadow-in {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 65% 35%, transparent 30%, rgba(0,0,0,0.25) 70%);
+  animation: fqSpinBallShadowIn 2.4s linear infinite;
+}
+.fq__spinner-ball-shadow-side {
+  position: absolute; inset: 2px;
+  border-radius: 50%;
+  box-shadow:
+    inset 6px 0 8px -4px rgba(0,0,0,0.2),
+    inset -6px 0 8px -4px rgba(0,0,0,0.2);
+}
+
+/* Spinner ball gender colors (inherit from orb classes on data-gender-orb) */
+.fq__spinner-ball {
+  background: radial-gradient(circle at 38% 30%, rgba(99,130,241,0.50), rgba(70,90,180,0.30), rgba(25,30,60,0.7));
+  box-shadow: 0 0 24px rgba(99,130,241,0.15), inset 0 -3px 8px rgba(0,0,0,0.12), inset 0 3px 10px rgba(255,255,255,0.15);
+  transition: background 0.6s ease, box-shadow 0.6s ease;
+}
+.fq__spinner-ball.fq__orb--mand {
+  background: radial-gradient(circle at 38% 30%, rgba(99,130,241,0.50), rgba(70,90,180,0.30), rgba(25,30,60,0.7));
+  box-shadow: 0 0 24px rgba(99,130,241,0.15), inset 0 -3px 8px rgba(0,0,0,0.12), inset 0 3px 10px rgba(255,255,255,0.15);
+}
+.fq__spinner-ball.fq__orb--kvinde {
+  background: radial-gradient(circle at 38% 30%, rgba(220,100,120,0.50), rgba(180,70,90,0.30), rgba(55,20,28,0.7));
+  box-shadow: 0 0 24px rgba(220,100,120,0.15), inset 0 -3px 8px rgba(0,0,0,0.12), inset 0 3px 10px rgba(255,255,255,0.15);
+}
+.fq__spinner-ball.fq__orb--andet {
+  background: radial-gradient(circle at 38% 30%, rgba(180,170,160,0.45), rgba(140,130,120,0.25), rgba(45,40,35,0.7));
+  box-shadow: 0 0 24px rgba(180,170,160,0.12), inset 0 -3px 8px rgba(0,0,0,0.12), inset 0 3px 10px rgba(255,255,255,0.15);
+}
+
+/* Spinner track glow (matches ball color) */
+.fq__spinner-outer::after {
+  content: ''; position: absolute; inset: -2px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: conic-gradient(from 0deg, transparent 60%, rgba(99,130,241,0.12) 80%, rgba(99,130,241,0.06) 100%) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: fqSpinCover 2.4s linear infinite;
+}
+
+@keyframes fqSpinBall {
+  from { transform: rotate(0deg) translateY(-60px); }
+  50%  { transform: rotate(180deg) translateY(-55px); }
+  to   { transform: rotate(360deg) translateY(-60px); }
+}
+@keyframes fqSpinBallShadowIn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+@keyframes fqSpinBallShadowOut {
+  from { transform: rotate(20deg); }
+  to   { transform: rotate(-340deg); }
+}
+@keyframes fqSpinBallTex {
+  from { transform: translateX(0); }
+  to   { transform: translateX(50%); }
+}
+@keyframes fqSpinCover {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.fq__loading-text {
+  text-align: center; min-height: 32px;
+  position: relative;
+}
+.fq__loading-line {
+  font-family: var(--fq-sans); font-size: 16px; font-weight: 600;
+  color: var(--fq-text-dim); margin: 0;
+  opacity: 0; position: absolute; left: 50%; transform: translateX(-50%) translateY(8px);
+  white-space: nowrap;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.fq__loading-line--active {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+.fq__loading-line:first-child { position: relative; transform: translateX(0) translateY(8px); }
+.fq__loading-line:first-child.fq__loading-line--active { transform: translateX(0) translateY(0); }
+.fq__loading-bar {
+  width: 200px; height: 3px; border-radius: 3px;
+  background: rgba(255,255,255,0.10); overflow: hidden;
+}
+.fq__loading-bar-fill {
+  height: 100%; width: 0%; border-radius: 3px;
+  background: linear-gradient(90deg, rgba(99,102,241,0.6), rgba(244,63,94,0.4));
+  transition: width 0.4s ease;
+}
+
+@media (max-width: 600px) {
+  .fq__bar { bottom: 16px; width: calc(100% - 32px); padding: 10px 12px; border-radius: 16px; }
+  .fq__cards { grid-template-columns: 1fr; max-width: 300px; }
+  .fq__viewport { padding: 50px 20px 120px; }
+  .fq__option { padding: 14px 20px; font-size: 14px; }
+  .fq__age-card { padding: 24px 28px 20px; max-width: 220px; }
+  .fq__age-value { font-size: 52px; }
+  .fq__orb--lg { width: 90px; height: 90px; }
+  .fq__shape--1 { width: 80vw; height: 18vw; left: -25vw; }
+  .fq__shape--2 { width: 70vw; height: 16vw; right: -22vw; }
+  .fq__shape--3 { width: 55vw; height: 13vw; left: -15vw; }
+  .fq__shape--4 { width: 40vw; height: 10vw; right: -12vw; }
+  .fq__shape--5 { width: 30vw; height: 8vw; left: -8vw; }
+  .fq__spinner { width: 120px; height: 120px; }
+  .fq__spinner-ball { width: 30px; height: 30px; margin: -15px 0 0 -15px; }
+  @keyframes fqSpinBall {
+    from { transform: rotate(0deg) translateY(-45px); }
+    50%  { transform: rotate(180deg) translateY(-42px); }
+    to   { transform: rotate(360deg) translateY(-45px); }
+  }
+}
+</style>
+
+<script>
+/* Meta Pixel — Facialmatch */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1957227764508148');
+fbq('track', 'PageView');
+</script>
+
+<script>
+(function(){
+'use strict';
+
+var quizQuestions = [
+  {
+    id: 'skin-type',
+    question: 'Hvordan vil du beskrive din hudtype?',
+    info: 'Tør hud føles ofte stram og kan skalle. Fedtet hud har tendens til glans og store porer. Følsom hud bliver let rød og irriteret. Normal hud føles balanceret uden tørhed eller overskydende olie.',
+    type: 'pills',
+    options: [
+      { label: 'Tør og stram', scores: { phformula: 1, gravid: 1, mesoglow: 1, exos: 2, nanoneedling: 2, drjoseph_eyelift: 3, drjoseph_signatur: 3 } },
+      { label: 'Fedtet eller blandet', scores: { phformula: 3, fireice: 2, teenager: 3, microneedling: 4 } },
+      { label: 'Følsom og reaktiv', scores: { gravid: 2, nanoneedling: 2, drjoseph_eyelift: 3, drjoseph_signatur: 3 } },
+      { label: 'Normal', scores: { phformula: 3, fireice: 1, mesoglow: 3, nanoneedling: 3, microneedling: 1, drjoseph_eyelift: 1, drjoseph_signatur: 1 } }
+    ]
+  },
+  {
+    id: 'concern',
+    question: 'Hvad er din primære hudbekymring?',
+    type: 'pills',
+    options: [
+      { label: 'Acne eller uren hud', scores: { phformula: 3, fireice: 1, teenager: 3, nanoneedling: 1 } },
+      { label: 'Rynker og fine linjer', scores: { phformula: 1, mesoglow: 3, exos: 3, nanoneedling: 2, microneedling: 1, drjoseph_eyelift: 2 } },
+      { label: 'Pigmentpletter', scores: { phformula: 2, fireice: 1, microneedling: 3 } },
+      { label: 'Manglende glød', scores: { fireice: 3, mesoglow: 3, nanoneedling: 3, drjoseph_signatur: 1 } }
+    ]
+  },
+  {
+    id: 'goal',
+    question: 'Hvad er dit vigtigste mål?',
+    type: 'pills',
+    options: [
+      { label: 'Glød og friskhed', scores: { fireice: 2, phformula: 2, mesoglow: 3, exos: 2, drjoseph_signatur: 1 } },
+      { label: 'Anti-aging og fasthed', scores: { fireice: 3, mesoglow: 3, exos: 3, microneedling: 3, drjoseph_eyelift: 2 } },
+      { label: 'Beroligelse og balance', scores: { gravid: 2, nanoneedling: 2, drjoseph_signatur: 2 } },
+      { label: 'Dybderensning', scores: { phformula: 3, teenager: 4 } }
+    ]
+  },
+  {
+    id: 'sensitivity',
+    question: 'Hvor følsom er din hud?',
+    type: 'pills',
+    options: [
+      { label: 'Meget følsom', scores: { gravid: 2, drjoseph_signatur: 2 } },
+      { label: 'Lidt følsom', scores: { phformula: 2, fireice: 1, gravid: 1, nanoneedling: 2, drjoseph_eyelift: 2, drjoseph_signatur: 2 } },
+      { label: 'Robust — tåler det meste', scores: { fireice: 3, mesoglow: 3, exos: 3, nanoneedling: 2, microneedling: 3 } }
+    ]
+  },
+  {
+    id: 'experience',
+    question: 'Hvad er din erfaring med ansigtsbehandlinger?',
+    type: 'pills',
+    options: [
+      { label: 'Det er min første', scores: { phformula: 5, teenager: 4, gravid: 1, nanoneedling: 2, drjoseph_eyelift: 2, drjoseph_signatur: 3 } },
+      { label: 'Har prøvet basale behandlinger', scores: { phformula: 2, fireice: 1, teenager: 2, mesoglow: 1, nanoneedling: 1, drjoseph_eyelift: 2, drjoseph_signatur: 1 } },
+      { label: 'Erfaren — klar til avanceret', scores: { fireice: 2, mesoglow: 3, exos: 3, nanoneedling: 3, microneedling: 3, drjoseph_eyelift: 2, drjoseph_signatur: 2 } }
+    ]
+  },
+  {
+    id: 'downtime',
+    question: 'Hvor meget downtime kan du acceptere?',
+    info: 'Downtime er den tid din hud bruger på at hele sig efter en behandling. Det kan betyde rødme, afskalning eller følsomhed, hvor du måske ikke ønsker at vise dig offentligt.',
+    type: 'cards',
+    options: [
+      { label: 'Ingen', sub: 'Vil se godt ud med det samme', scores: { phformula: 3, fireice: 1, gravid: 3, drjoseph_eyelift: 3, drjoseph_signatur: 3 } },
+      { label: 'Et par dage', sub: 'Lidt rødme er OK', scores: { phformula: 1, fireice: 3, teenager: 3, mesoglow: 3, nanoneedling: 2, microneedling: 1 } },
+      { label: 'Op til en uge', sub: 'Klar til healing', scores: { exos: 3, nanoneedling: 1, microneedling: 4 } }
+    ]
+  },
+  {
+    id: 'post-treatment',
+    question: 'Hvad er vigtigst for dig efter en behandling?',
+    type: 'slider',
+    options: [
+      { label: 'Ingen downtime', scores: { phformula: 2, nanoneedling: 2, gravid: 2, drjoseph_signatur: 1 } },
+      { label: 'Blød og velplejet hud', scores: { nanoneedling: 3, drjoseph_signatur: 3, drjoseph_eyelift: 2, gravid: 1, mesoglow: 1 } },
+      { label: 'Frisk og fornyet hud', scores: { phformula: 3, nanoneedling: 1, mesoglow: 2, fireice: 2 } },
+      { label: 'Synlige resultater', scores: { phformula: 2, fireice: 3, microneedling: 3, exos: 2, mesoglow: 1 } },
+      { label: 'Dyb fornyelse', scores: { exos: 4, microneedling: 2, fireice: 1 } }
+    ]
+  },
+  {
+    id: 'intensity',
+    question: 'Hvor intens må din behandling være?',
+    type: 'slider',
+    options: [
+      { label: 'Blid og behagelig', scores: { drjoseph_signatur: 2, gravid: 2 } },
+      { label: 'Mild med effekt', scores: { phformula: 3, nanoneedling: 1, mesoglow: 1, drjoseph_signatur: 1, drjoseph_eyelift: 2 } },
+      { label: 'Må gerne mærkes', scores: { phformula: 2, nanoneedling: 2, mesoglow: 2, fireice: 2, microneedling: 1 } },
+      { label: 'Intens og effektiv', scores: { mesoglow: 2, fireice: 3, microneedling: 3, exos: 2 } },
+      { label: 'Jo mere jo bedre', scores: { exos: 4, microneedling: 2, fireice: 1 } }
+    ]
+  },
+  {
+    id: 'medication',
+    question: 'Tager du — eller har du inden for de seneste 6 måneder taget — medicin, der påvirker din hud?',
+    type: 'pills',
+    options: [
+      { label: 'Ja', scores: { phformula: 7, drjoseph_signatur: 4 } },
+      { label: 'Nej', scores: {} }
+    ]
+  },
+  {
+    id: 'lifestyle',
+    question: 'Hvad passer bedst til dig?',
+    type: 'pills',
+    options: [
+      { label: 'Luksuriøs og afslappende', scores: { fireice: 3, gravid: 2, drjoseph_eyelift: 2, drjoseph_signatur: 3 } },
+      { label: 'Effektiv og resultatorienteret', scores: { phformula: 2, fireice: 3, mesoglow: 3, exos: 3, nanoneedling: 2, microneedling: 4 } },
+      { label: 'Naturlig og skånsom', scores: { gravid: 2, nanoneedling: 1, drjoseph_eyelift: 3, drjoseph_signatur: 3 } },
+      { label: 'Moderne og innovativ', scores: { mesoglow: 3, exos: 4, drjoseph_eyelift: 1 } }
+    ]
+  }
+];
+
+var treatments = {
+
+  /* ---- Classic Facial Treatments ---- */
+  phformula: {
+    name: 'pHformula',
+    desc: 'En avanceret kemisk peeling, der effektivt behandler acne, pigmentering og ujævnheder med pharma-grade ingredienser.',
+    duration: '60 min', price: '765 kr.', ctaUrl: '/products/phformula-60-behandling',
+    formUrl: '/pages/facialmatch-phformula'
+  },
+  fireice: {
+    name: 'Fire & Ice',
+    desc: 'En intens todelt behandling med varme og kulde. Giver øjeblikkelig glød, stramhed og forfinelse af huden.',
+    duration: '40 min', price: '725 kr.', ctaUrl: '/products/fire-ice',
+    formUrl: '/pages/facialmatch-fireice'
+  },
+  teenager: {
+    name: 'Teenager Ansigtsbehandling',
+    desc: 'Specielt designet til ung hud. En skånsom, men effektiv behandling der bekæmper acne og urenheder uden at belaste huden.',
+    duration: '40 min', price: '525 kr.', ctaUrl: '/products/teenager-ansigtsbehandlingbehandling',
+    formUrl: '/pages/facialmatch-teenager'
+  },
+  gravid: {
+    name: 'Gravid Ansigtsbehandling',
+    desc: 'En tryg og nærende behandling tilpasset gravide og nybagte mødre. Blide ingredienser der plejer og beroligelser huden.',
+    duration: '50 min', price: '895 kr.', ctaUrl: '/products/gravid-behandling-velvaere-afslapning',
+    formUrl: '/pages/facialmatch-gravid'
+  },
+
+  /* ---- Special Facial Treatments ---- */
+  mesoglow: {
+    name: 'MESO Glow',
+    desc: 'En avanceret glødbehandling med mesoterapiteknik. Tilfører aktive ingredienser dybt i huden for øjeblikkelig udstråling.',
+    duration: '60 min', price: '1.495 kr.', ctaUrl: '/products/meso-glow',
+    formUrl: '/pages/facialmatch-mesoglow'
+  },
+  exos: {
+    name: 'EXOS X Needling',
+    desc: 'Vores mest avancerede needling-behandling. EXOS X stimulerer dyb kollagenproduktion for markant anti-aging og hudfornyelse.',
+    duration: '60 min', price: '1.795 kr.', ctaUrl: '/products/exos-x-needling',
+    formUrl: '/pages/facialmatch-exos'
+  },
+  nanoneedling: {
+    name: 'Nano Needling Ansigtsbehandling',
+    desc: 'En skånsom needling med nano-teknologi. Forbedrer hudtekstur og produktabsorption uden downtime — perfekt til nybegyndere.',
+    duration: '60 min', price: '1.250 kr.', ctaUrl: '/products/nano-needling-ansigtsbehandling',
+    formUrl: '/pages/facialmatch-nanoneedling'
+  },
+  microneedling: {
+    name: 'Micro Needling Ansigtsbehandling',
+    desc: 'Klassisk microneedling der reducerer rynker, ar og pigmentering. Stimulerer hudens naturlige healingproces og kollagen.',
+    duration: '60 min', price: '1.450 kr.', ctaUrl: '/products/micro-needling-ansigtsbehandling',
+    formUrl: '/pages/facialmatch-microneedling'
+  },
+
+  /* ---- Team Dr. Joseph Treatments ---- */
+  drjoseph_eyelift: {
+    name: 'Team Dr. Joseph Supreme Eye & FaceLift',
+    desc: 'En premium lifting-behandling med fokus på øjenområdet og ansigt. Alpine ingredienser giver synlig løftende og strammende effekt.',
+    duration: '45 min', price: '695 kr.', ctaUrl: '/products/team-dr-joseph-supreme-eye-facelift',
+    formUrl: '/pages/facialmatch-drjoseph-eyelift'
+  },
+  drjoseph_signatur: {
+    name: 'Team Dr. Joseph Signatur',
+    desc: 'En holistisk signaturbehandling med naturlige alpine urteekstrakter. Dyb beroligelse og balance til selv den mest følsomme hud.',
+    duration: '75 min', price: '995 kr.', ctaUrl: '/products/team-dr-joseph-signatur',
+    formUrl: '/pages/facialmatch-drjoseph-signatur'
+  }
+};
+
+/* ==============================================================
+   ENGINE
+   ---------------------------------------------------------------
+   Flow: intro → name → gender → age → quiz questions →
+         [pregnancy if Kvinde] → loading animation → result
+   ============================================================== */
+
+var PROFILE_STEPS = 4;
+var QUIZ_STEPS = quizQuestions.length;
+
+var root = document.getElementById('fq');
+if (!root) return;
+
+var allScreens = root.querySelectorAll('.fq__screen');
+var qTitle    = root.querySelector('[data-q-title]');
+var qBody     = root.querySelector('[data-q-body]');
+var rGreeting = root.querySelector('[data-r-greeting]');
+var rName     = root.querySelector('[data-r-name]');
+var rDesc     = root.querySelector('[data-r-desc]');
+var rDuration = root.querySelector('[data-r-duration]');
+var rPrice    = root.querySelector('[data-r-price]');
+var rCta      = root.querySelector('[data-r-cta]');
+var barLabel  = root.querySelector('[data-bar-label]');
+var barStep   = root.querySelector('[data-bar-step]');
+var btnBack   = root.querySelector('[data-action="back"]');
+var btnNext   = root.querySelector('[data-action="next"]');
+var progress  = root.querySelector('[data-progress]');
+var nameInput      = root.querySelector('[data-name-input]');
+var genderBtns     = root.querySelectorAll('[data-gender]');
+var profileNameDisp = root.querySelector('[data-profile-name-gender]');
+var ageLabel  = root.querySelector('[data-age-label]');
+var ageValue  = root.querySelector('[data-age-value]');
+var ageMinus  = root.querySelector('[data-age-action="minus"]');
+var agePlus   = root.querySelector('[data-age-action="plus"]');
+var pregnantBtns    = root.querySelectorAll('[data-pregnant]');
+var pregnantNameDisp = root.querySelector('[data-profile-name-pregnant]');
+var loadBar   = root.querySelector('[data-load-bar]');
+var loadLines = root.querySelectorAll('[data-load-line]');
+var welcomeName = root.querySelector('[data-welcome-name]');
+
+var step = -1;
+var profile = { name: '', gender: '', age: 30, pregnant: '' };
+var answers = {};
+var winningKey = '';
+
+function needsPregnancyStep() {
+  return profile.gender === 'Kvinde' && profile.age >= 20 && profile.age <= 44;
+}
+
+function getTotalSteps() {
+  return PROFILE_STEPS + QUIZ_STEPS + (needsPregnancyStep() ? 1 : 0);
+}
+
+function showScreen(key) {
+  allScreens.forEach(function(s) {
+    s.classList.toggle('fq__screen--active', s.getAttribute('data-screen') === key);
+  });
+}
+
+function stepToScreen(s) {
+  if (s < 0)  return 'intro';
+  if (s === 0) return 'profile-name';
+  if (s === 1) return 'profile-gender';
+  if (s === 2) return 'profile-age';
+  if (s === 3) return 'welcome';
+  var quizEnd = PROFILE_STEPS + QUIZ_STEPS;
+  if (s < quizEnd) return 'quiz';
+  if (needsPregnancyStep() && s === quizEnd) return 'profile-pregnant';
+  return 'loading';
+}
+
+function canProceed() {
+  if (step < 0) return true;
+  if (step === 0) return profile.name.trim().length > 0;
+  if (step === 1) return profile.gender !== '';
+  if (step === 2) return true;
+  if (step === 3) return true;
+  var quizEnd = PROFILE_STEPS + QUIZ_STEPS;
+  if (step < quizEnd) {
+    var qIdx = step - PROFILE_STEPS;
+    return answers[quizQuestions[qIdx].id] !== undefined;
+  }
+  if (needsPregnancyStep() && step === quizEnd) {
+    return profile.pregnant !== '';
+  }
+  return true;
+}
+
+function updateBar() {
+  var total = getTotalSteps();
+  var isProfile = step >= 0 && step < PROFILE_STEPS;
+  var isWelcome = step === 3;
+  barLabel.textContent = step < 0 ? 'Facialmatch' : isWelcome ? '' : isProfile ? 'Profiler' : 'Facialmatch';
+  barStep.textContent  = step < 0 || isWelcome ? '' : 'Trin ' + (step + 1) + ' af ' + total;
+  btnBack.disabled = (step <= -1 || isWelcome);
+  btnNext.disabled = isWelcome ? true : !canProceed();
+  progress.style.width = (step < 0 ? 0 : ((step + 1) / total * 100)) + '%';
+}
+
+function enterStep() {
+  var screen = stepToScreen(step);
+  showScreen(screen);
+
+  if (step === 1) {
+    profileNameDisp.textContent = profile.name || '';
+    genderBtns.forEach(function(b) {
+      b.classList.toggle('fq__option--selected', b.getAttribute('data-gender') === profile.gender);
+    });
+  }
+  if (step === 2) {
+    ageLabel.textContent = profile.name || '';
+    ageValue.textContent = profile.age;
+  }
+  if (step === 3) {
+    welcomeName.textContent = 'Velkommen ' + (profile.name || '');
+    welcomeName.style.animation = 'none';
+    root.querySelector('.fq__welcome-sub').style.animation = 'none';
+    void welcomeName.offsetWidth;
+    welcomeName.style.animation = '';
+    root.querySelector('.fq__welcome-sub').style.animation = '';
+    btnNext.disabled = true;
+    btnBack.disabled = true;
+    setTimeout(function() {
+      if (step === 3) { step++; enterStep(); }
+    }, 2800);
+    return;
+  }
+  if (screen === 'quiz') {
+    renderQuestion(step - PROFILE_STEPS);
+  }
+  if (screen === 'profile-pregnant') {
+    pregnantNameDisp.textContent = profile.name || '';
+    pregnantBtns.forEach(function(b) {
+      b.classList.toggle('fq__option--selected', b.getAttribute('data-pregnant') === profile.pregnant);
+    });
+  }
+  updateBar();
+  if (step === 0) setTimeout(function() { nameInput.focus(); }, 100);
+}
+
+/* ---- Name ---- */
+nameInput.addEventListener('input', function() { profile.name = nameInput.value; updateBar(); });
+nameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && canProceed()) goNext(); });
+
+/* ---- Gender ---- */
+genderBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    profile.gender = btn.getAttribute('data-gender');
+    genderBtns.forEach(function(b) { b.classList.toggle('fq__option--selected', b === btn); });
+    if (profile.gender !== 'Kvinde') { profile.pregnant = ''; }
+    updateGenderOrbs();
+    btnNext.disabled = false;
+  });
+});
+
+function updateGenderOrbs() {
+  var cls = profile.gender === 'Kvinde' ? 'fq__orb--kvinde' : profile.gender === 'Mand' ? 'fq__orb--mand' : 'fq__orb--andet';
+  root.querySelectorAll('[data-gender-orb]').forEach(function(orb) {
+    orb.classList.remove('fq__orb--mand', 'fq__orb--kvinde', 'fq__orb--andet');
+    orb.classList.add(cls);
+  });
+}
+
+/* ---- Pregnancy ---- */
+pregnantBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    profile.pregnant = btn.getAttribute('data-pregnant');
+    pregnantBtns.forEach(function(b) { b.classList.toggle('fq__option--selected', b === btn); });
+    btnNext.disabled = false;
+  });
+});
+
+/* ---- Age ---- */
+function setAge(v) { profile.age = Math.max(12, Math.min(90, v)); ageValue.textContent = profile.age; }
+var ageInterval = null, ageTimeout = null;
+function startHold(d) {
+  setAge(profile.age + d);
+  ageTimeout = setTimeout(function() { ageInterval = setInterval(function() { setAge(profile.age + d); }, 80); }, 400);
+}
+function stopHold() { clearTimeout(ageTimeout); clearInterval(ageInterval); }
+ageMinus.addEventListener('mousedown', function() { startHold(-1); });
+ageMinus.addEventListener('touchstart', function(e) { e.preventDefault(); startHold(-1); });
+agePlus.addEventListener('mousedown', function() { startHold(1); });
+agePlus.addEventListener('touchstart', function(e) { e.preventDefault(); startHold(1); });
+document.addEventListener('mouseup', stopHold);
+document.addEventListener('touchend', stopHold);
+
+/* ---- Quiz renderer ---- */
+function renderQuestion(qIdx) {
+  var q = quizQuestions[qIdx], sel = answers[q.id], html = '';
+
+  if (q.info) {
+    qTitle.innerHTML = q.question + '<button class="fq__info-toggle" data-info-toggle aria-label="Info">?</button>';
+  } else {
+    qTitle.textContent = q.question;
+  }
+
+  var infoHtml = '';
+  if (q.info) {
+    infoHtml = '<div class="fq__info-box" data-info-box>' + q.info + '</div>';
+  }
+
+  if (q.type === 'slider') {
+    var cur = (sel !== undefined) ? sel : 0;
+    var count = q.options.length;
+    var pct = count > 1 ? (cur / (count - 1) * 100) : 0;
+
+    html = infoHtml + '<div class="fq__slider fq__anim">';
+    html += '<div class="fq__slider-value" data-slider-value>' + q.options[cur].label + '</div>';
+    html += '<div class="fq__slider-middle">';
+    if (profile.name) html += '<div class="fq__slider-name">' + profile.name + '</div>';
+    html += '</div>';
+    html += '<div class="fq__slider-track-wrap" data-slider-wrap>';
+    html += '<div class="fq__slider-track">';
+    html += '<div class="fq__slider-track-fill" style="width:' + pct + '%"></div>';
+    q.options.forEach(function(opt, i) {
+      var sp = count > 1 ? (i / (count - 1) * 100) : 50;
+      var passed = i <= cur ? ' fq__slider-snap--passed' : '';
+      html += '<div class="fq__slider-snap' + passed + '" style="left:' + sp + '%"></div>';
+    });
+    html += '<div class="fq__slider-thumb' + (profile.gender === 'Kvinde' ? ' fq__slider-thumb--kvinde' : profile.gender === 'Andet' ? ' fq__slider-thumb--andet' : '') + '" data-slider-thumb style="left:' + pct + '%"></div>';
+    html += '</div></div>';
+    html += '<div class="fq__slider-labels">';
+    html += '<span class="fq__slider-label-edge">' + q.options[0].label + '</span>';
+    html += '<span class="fq__slider-label-edge">' + q.options[count - 1].label + '</span>';
+    html += '</div>';
+    html += '</div>';
+
+    qBody.innerHTML = html;
+
+    var wrap = qBody.querySelector('[data-slider-wrap]');
+    var thumb = qBody.querySelector('[data-slider-thumb]');
+    var fill = qBody.querySelector('.fq__slider-track-fill');
+    var valueEl = qBody.querySelector('[data-slider-value]');
+    var snaps = qBody.querySelectorAll('.fq__slider-snap');
+    var sliderIdx = cur;
+    var dragging = false;
+
+    function snapTo(idx, animate) {
+      if (idx < 0) idx = 0;
+      if (idx >= count) idx = count - 1;
+      if (idx === sliderIdx && animate) return;
+      var oldIdx = sliderIdx;
+      sliderIdx = idx;
+      var p = count > 1 ? (idx / (count - 1) * 100) : 0;
+      thumb.style.left = p + '%';
+      fill.style.width = p + '%';
+      snaps.forEach(function(s, si) { s.classList.toggle('fq__slider-snap--passed', si <= idx); });
+      if (oldIdx !== idx) {
+        valueEl.classList.add('fq__slider-value--exit');
+        setTimeout(function() {
+          valueEl.textContent = q.options[idx].label;
+          valueEl.classList.remove('fq__slider-value--exit');
+        }, 120);
+      }
+      answers[q.id] = idx;
+      btnNext.disabled = false;
+    }
+
+    function getIdxFromX(clientX) {
+      var rect = wrap.getBoundingClientRect();
+      var ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(ratio * (count - 1));
+    }
+
+    function onStart(e) {
+      dragging = true;
+      wrap.classList.add('fq__slider-track-wrap--dragging');
+      var x = e.touches ? e.touches[0].clientX : e.clientX;
+      snapTo(getIdxFromX(x), false);
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      var x = e.touches ? e.touches[0].clientX : e.clientX;
+      var rect = wrap.getBoundingClientRect();
+      var ratio = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+      var p = ratio * 100;
+      thumb.style.left = p + '%';
+      fill.style.width = p + '%';
+      var nearIdx = Math.round(ratio * (count - 1));
+      snaps.forEach(function(s, si) { s.classList.toggle('fq__slider-snap--passed', si <= nearIdx); });
+      if (nearIdx !== sliderIdx) {
+        sliderIdx = nearIdx;
+        valueEl.classList.add('fq__slider-value--exit');
+        setTimeout(function() {
+          valueEl.textContent = q.options[nearIdx].label;
+          valueEl.classList.remove('fq__slider-value--exit');
+        }, 80);
+        answers[q.id] = nearIdx;
+      }
+    }
+    function onEnd() {
+      if (!dragging) return;
+      dragging = false;
+      wrap.classList.remove('fq__slider-track-wrap--dragging');
+      snapTo(sliderIdx, true);
+    }
+
+    thumb.addEventListener('mousedown', function(e) { e.preventDefault(); onStart(e); });
+    thumb.addEventListener('touchstart', function(e) { onStart(e); }, { passive: true });
+    wrap.addEventListener('click', function(e) { if (!dragging) snapTo(getIdxFromX(e.clientX), true); });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchend', onEnd);
+
+    if (sel === undefined) { answers[q.id] = 0; btnNext.disabled = false; }
+
+  } else if (q.type === 'cards') {
+    html = infoHtml;
+    html += '<div class="fq__cards fq__anim">';
+    q.options.forEach(function(opt, i) {
+      var sc = i === sel ? ' fq__card--selected' : '';
+      html += '<div class="fq__card' + sc + '" data-idx="' + i + '" role="button" tabindex="0">';
+      html += '<span class="fq__card-label">' + opt.label + '</span>';
+      if (opt.sub) html += '<span class="fq__card-sub">' + opt.sub + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    qBody.innerHTML = html;
+    var items = qBody.querySelectorAll('[data-idx]');
+    items.forEach(function(item) {
+      function doSelect() {
+        var idx = parseInt(item.getAttribute('data-idx'), 10);
+        answers[q.id] = idx;
+        items.forEach(function(el, j) { el.classList.toggle('fq__card--selected', j === idx); });
+        btnNext.disabled = false;
+      }
+      item.addEventListener('click', doSelect);
+      item.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSelect(); } });
+    });
+  } else {
+    html = infoHtml;
+    html += '<div class="fq__options fq__anim">';
+    q.options.forEach(function(opt, i) {
+      var sc = i === sel ? ' fq__option--selected' : '';
+      html += '<button class="fq__option' + sc + '" data-idx="' + i + '">' + opt.label + '</button>';
+    });
+    html += '</div>';
+    qBody.innerHTML = html;
+    var items = qBody.querySelectorAll('[data-idx]');
+    items.forEach(function(item) {
+      function doSelect() {
+        var idx = parseInt(item.getAttribute('data-idx'), 10);
+        answers[q.id] = idx;
+        items.forEach(function(el, j) { el.classList.toggle('fq__option--selected', j === idx); });
+        btnNext.disabled = false;
+      }
+      item.addEventListener('click', doSelect);
+      item.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSelect(); } });
+    });
+  }
+
+  var infoToggle = qTitle.querySelector('[data-info-toggle]');
+  var infoBox = qBody.querySelector('[data-info-box]');
+  if (infoToggle && infoBox) {
+    infoToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      infoBox.classList.toggle('fq__info-box--open');
+      infoToggle.textContent = infoBox.classList.contains('fq__info-box--open') ? '×' : '?';
+    });
+  }
+}
+
+/* ---- Scoring ---- */
+function calcResult() {
+  var scores = {};
+  var age = profile.age;
+  var isTeenager = age >= 12 && age <= 20;
+
+  Object.keys(treatments).forEach(function(k) {
+    if (k === 'teenager' && !isTeenager) return;
+    if (k === 'gravid' && profile.pregnant !== 'yes' && profile.pregnant !== 'recent') return;
+    scores[k] = 0;
+  });
+
+  quizQuestions.forEach(function(q) {
+    var idx = answers[q.id];
+    if (idx !== undefined && q.options[idx]) {
+      var s = q.options[idx].scores;
+      Object.keys(s).forEach(function(k) {
+        if (scores[k] !== undefined) scores[k] += s[k];
+      });
+    }
+  });
+
+  /* Age-based bonus: teenager +20 for age 12–20 */
+  if (isTeenager && scores.teenager !== undefined) {
+    scores.teenager += 20;
+  }
+
+  /* Pregnancy bonus */
+  if (profile.pregnant === 'yes') {
+    if (scores.gravid !== undefined) scores.gravid += 12;
+  } else if (profile.pregnant === 'recent') {
+    if (scores.gravid !== undefined) scores.gravid += 8;
+    if (scores.drjoseph_signatur !== undefined) scores.drjoseph_signatur += 6;
+    if (scores.phformula !== undefined) scores.phformula += 2;
+  }
+
+  var best = null, max = -1;
+  Object.keys(scores).forEach(function(k) {
+    if (scores[k] > max) { max = scores[k]; best = k; }
+  });
+  return best;
+}
+
+/* ---- Loading animation ---- */
+function playLoading(callback) {
+  showScreen('loading');
+  barLabel.textContent = 'Facialmatch';
+  barStep.textContent = '';
+  progress.style.width = '100%';
+  btnNext.disabled = true;
+  btnBack.disabled = true;
+
+  var bar = loadBar;
+  var lines = loadLines;
+  var lineCount = lines.length;
+  var duration = 3200;
+  var perLine = duration / lineCount;
+
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  lines.forEach(function(l) { l.classList.remove('fq__loading-line--active'); });
+
+  setTimeout(function() {
+    bar.style.transition = 'width ' + (duration / 1000) + 's ease';
+    bar.style.width = '100%';
+  }, 50);
+
+  for (var i = 0; i < lineCount; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        lines.forEach(function(l) { l.classList.remove('fq__loading-line--active'); });
+        lines[idx].classList.add('fq__loading-line--active');
+      }, idx * perLine);
+    })(i);
+  }
+
+  setTimeout(callback, duration + 200);
+}
+
+/* ---- Show result ---- */
+function showResult() {
+  winningKey = calcResult();
+  var t = treatments[winningKey];
+  rGreeting.textContent = profile.name ? ('Hej ' + profile.name + ', vi anbefaler') : 'Vi anbefaler';
+  rName.textContent = t.name;
+  rDesc.textContent = t.desc;
+  rDuration.textContent = t.duration;
+  rPrice.textContent = t.price;
+  rCta.href = t.ctaUrl;
+  showScreen('result');
+  barLabel.textContent = 'Resultat';
+  barStep.textContent = '';
+  progress.style.width = '100%';
+  btnNext.disabled = true;
+  btnBack.disabled = false;
+  root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  /* Meta Pixel — quiz completed */
+  if (typeof fbq === 'function') {
+    fbq('track', 'CompleteRegistration', {
+      content_name: t.name,
+      content_category: 'Facialmatch',
+      value: 0,
+      currency: 'DKK'
+    });
+  }
+
+  setTimeout(function() {
+    if (!mcOverlay.classList.contains('fq__modal-overlay--open')) {
+      openSaveModal();
+    }
+  }, 5000);
+}
+
+/* ---- Navigation ---- */
+function isLastStep() {
+  var total = getTotalSteps();
+  return step >= total - 1;
+}
+
+function goNext() {
+  if (!canProceed()) return;
+  if (isLastStep()) {
+    playLoading(showResult);
+  } else {
+    step++;
+    enterStep();
+  }
+}
+function goBack() {
+  if (step > 0) {
+    step--;
+    if (step === 3) step--; /* skip welcome screen */
+    enterStep();
+  }
+  else if (step === 0) { step = -1; showScreen('intro'); updateBar(); }
+}
+function retake() {
+  step = -1; profile = { name: '', gender: '', age: 30, pregnant: '' }; answers = {};
+  nameInput.value = '';
+  genderBtns.forEach(function(b) { b.classList.remove('fq__option--selected'); });
+  pregnantBtns.forEach(function(b) { b.classList.remove('fq__option--selected'); });
+  root.querySelectorAll('[data-gender-orb]').forEach(function(orb) {
+    orb.classList.remove('fq__orb--kvinde', 'fq__orb--andet');
+    orb.classList.add('fq__orb--mand');
+  });
+  showScreen('intro'); updateBar();
+  root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+btnNext.addEventListener('click', goNext);
+btnBack.addEventListener('click', goBack);
+root.querySelector('[data-action="retake"]').addEventListener('click', retake);
+root.querySelector('[data-action="start"]').addEventListener('click', goNext);
+updateBar();
+
+/* ==============================================================
+   GEM RESULTAT — MAILCHIMP POPUP
+   ---------------------------------------------------------------
+   Posts to Mailchimp via JSONP (no page redirect).
+   Sends: EMAIL, FNAME, FACEMATCH (treatment name), tag 6678956.
+   ============================================================== */
+
+var mcOverlay  = root.querySelector('[data-save-overlay]');
+var mcBody     = root.querySelector('[data-save-body]');
+var mcFname    = root.querySelector('[data-mc-fname]');
+var mcEmail    = root.querySelector('[data-mc-email]');
+var mcMatch    = root.querySelector('[data-mc-facematch]');
+var mcSubmit   = root.querySelector('[data-action="save-submit"]');
+var mcSuccess  = root.querySelector('[data-save-success]');
+var mcError    = root.querySelector('[data-save-error]');
+
+var MC_URL = 'https://hoejholthudpleje.us13.list-manage.com/subscribe/post?u=1a0a0f500dc6fc987c19f8621&id=8ba4e54520&f_id=0066e0e2f0';
+
+function openSaveModal() {
+  mcFname.value = profile.name || '';
+  mcEmail.value = '';
+  mcSubmit.disabled = true;
+  mcSubmit.textContent = 'Gem mit Resultat';
+  mcBody.style.display = '';
+  mcSuccess.classList.remove('fq__modal-success--visible');
+  mcError.classList.remove('fq__modal-error--visible');
+  updateGenderOrbs();
+  mcOverlay.classList.add('fq__modal-overlay--open');
+  setTimeout(function() { mcEmail.focus(); }, 350);
+}
+
+function closeSaveModal() {
+  mcOverlay.classList.remove('fq__modal-overlay--open');
+}
+
+function validateMcForm() {
+  var nameOk = mcFname.value.trim().length > 0;
+  var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mcEmail.value.trim());
+  mcSubmit.disabled = !(nameOk && emailOk);
+}
+
+function submitToMailchimp() {
+  if (mcSubmit.disabled) return;
+  mcSubmit.disabled = true;
+  mcSubmit.textContent = 'Sender...';
+
+  var treatmentName = treatments[winningKey] ? treatments[winningKey].name : '';
+
+  var formData = new FormData();
+  formData.append('EMAIL', mcEmail.value.trim());
+  formData.append('FNAME', mcFname.value.trim());
+  formData.append('FACEMATCH', treatmentName);
+  formData.append('MERGE8', treatmentName);
+  formData.append('tags', '6678956');
+  formData.append('b_1a0a0f500dc6fc987c19f8621_8ba4e54520', '');
+
+  fetch(MC_URL, {
+    method: 'POST',
+    body: formData,
+    mode: 'no-cors'
+  }).then(function() {
+    mcBody.style.display = 'none';
+    mcSuccess.classList.add('fq__modal-success--visible');
+  }).catch(function() {
+    mcBody.style.display = 'none';
+    mcSuccess.classList.add('fq__modal-success--visible');
+  });
+}
+
+root.querySelector('[data-action="save-open"]').addEventListener('click', openSaveModal);
+root.querySelector('[data-action="save-close"]').addEventListener('click', closeSaveModal);
+mcOverlay.addEventListener('click', function(e) { if (e.target === mcOverlay) closeSaveModal(); });
+mcFname.addEventListener('input', validateMcForm);
+mcEmail.addEventListener('input', validateMcForm);
+mcSubmit.addEventListener('click', submitToMailchimp);
+mcEmail.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); submitToMailchimp(); } });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Facialmatch Quiz",
+  "tag": "section",
+  "class": "facial-quiz-wrapper",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image",
+      "info": "Optional. Upload a background image (1920x1080). The gradient will show if left empty."
+    },
+    {
+      "type": "textarea",
+      "id": "intro_line2",
+      "label": "Intro subtitle",
+      "default": "Lad os finde den perfekte ansigtsbehandling til dig"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA button text",
+      "default": "Book behandling"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Facialmatch Quiz",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
