@@ -1,0 +1,358 @@
+{%- comment -%}
+----------------------------------------------------------------------------------------------------------------------
+PRODUCT BUNDLE OFFER
+----------------------------------------------------------------------------------------------------------------------
+
+Renders up to three quantity tiers (eg. 1 / 2 / 3 pcs) as selectable cards. Selecting a tier updates the quantity of
+the product form, so the regular "Add to cart" button is used as-is.
+
+The discount itself is NOT applied here. It must be created as an automatic discount in Shopify Discounts
+("Amount off products" with a "Minimum quantity of items" requirement, one discount per tier). The tiers configured in
+the block are only a presentation of those discounts and must be kept in sync with them.
+
+The block is part of the partial rerender flow (see "product-info"), so prices are always recalculated server-side
+when the variant changes. The selected tier is kept across rerenders by the <bundle-offer> element.
+
+********************************************
+Supported variables
+********************************************
+
+* product: the product to render the offer for
+* block: the block holding the settings
+* form_id: the ID of the product form whose quantity is updated
+{%- endcomment -%}
+
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+  assign unit_price = variant.price
+  assign image = variant.featured_media | default: product.featured_media
+  assign tier_indexes = '1,2,3' | split: ','
+
+  comment
+    First pass: resolve the quantity that is selected by default (falls back to the first enabled tier)
+  endcomment
+
+  assign default_quantity = nil
+  assign fallback_quantity = nil
+
+  for index in tier_indexes
+    assign key_enabled = 'tier_' | append: index | append: '_enabled'
+    assign key_quantity = 'tier_' | append: index | append: '_quantity'
+
+    if block.settings[key_enabled] != true
+      continue
+    endif
+
+    assign quantity = block.settings[key_quantity] | default: 1
+
+    if fallback_quantity == nil
+      assign fallback_quantity = quantity
+    endif
+
+    if block.settings.default_tier == index
+      assign default_quantity = quantity
+    endif
+  endfor
+
+  assign default_quantity = default_quantity | default: fallback_quantity
+
+  assign tag_style = ''
+
+  if block.settings.tag_background != blank and block.settings.tag_background != 'rgba(0,0,0,0)'
+    assign tag_style = tag_style | append: '--bundle-offer-tag-background: ' | append: block.settings.tag_background.rgb | append: ';'
+  endif
+
+  if block.settings.tag_text_color != blank and block.settings.tag_text_color != 'rgba(0,0,0,0)'
+    assign tag_style = tag_style | append: '--bundle-offer-tag-text: ' | append: block.settings.tag_text_color.rgb | append: ';'
+  endif
+-%}
+
+{%- if fallback_quantity != nil -%}
+  <bundle-offer class="bundle-offer v-stack gap-5" form-id="{{ form_id }}" default-quantity="{{ default_quantity }}" {% if tag_style != blank %}style="{{ tag_style }}"{% endif %}>
+    {%- if block.settings.title != blank or block.settings.subtitle != blank -%}
+      <div class="v-stack gap-1 text-center">
+        {%- if block.settings.title != blank -%}
+          <p class="bundle-offer__heading subheading">{{ block.settings.title }}</p>
+        {%- endif -%}
+
+        {%- if block.settings.subtitle != blank -%}
+          <p class="text-sm text-subdued">{{ block.settings.subtitle }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="bundle-offer__list v-stack gap-3" role="radiogroup">
+      {%- for index in tier_indexes -%}
+        {%- liquid
+          assign key_enabled = 'tier_' | append: index | append: '_enabled'
+          assign key_quantity = 'tier_' | append: index | append: '_quantity'
+          assign key_discount_type = 'tier_' | append: index | append: '_discount_type'
+          assign key_discount_value = 'tier_' | append: index | append: '_discount_value'
+          assign key_tag = 'tier_' | append: index | append: '_tag'
+          assign key_note = 'tier_' | append: index | append: '_note'
+
+          if block.settings[key_enabled] != true
+            continue
+          endif
+
+          assign quantity = block.settings[key_quantity] | default: 1
+          assign discount_type = block.settings[key_discount_type]
+          assign discount_value = block.settings[key_discount_value] | default: 0
+          assign tier_tag = block.settings[key_tag]
+          assign tier_note = block.settings[key_note]
+
+          assign regular_total = unit_price | times: quantity
+          assign discount_amount = 0
+
+          if discount_type == 'percentage' and discount_value > 0
+            assign discount_amount = regular_total | times: discount_value | divided_by: 100.0 | round
+          elsif discount_type == 'amount' and discount_value > 0
+            assign discount_amount = discount_value | times: 100 | round | times: quantity | at_most: regular_total
+          endif
+
+          assign discounted_total = regular_total | minus: discount_amount
+          assign savings_percentage = 0
+
+          if discount_amount > 0 and regular_total > 0
+            assign savings_percentage = discount_amount | times: 100.0 | divided_by: regular_total | round
+          endif
+
+          assign savings_text = ''
+
+          if discount_amount > 0 and block.settings.savings_text != blank
+            assign discount_amount_formatted = discount_amount | money
+            assign savings_text = block.settings.savings_text | replace: '[amount]', discount_amount_formatted
+          endif
+
+          if tier_note != blank
+            assign savings_text = savings_text | append: ' ' | append: tier_note | strip
+          endif
+        -%}
+
+        <label class="bundle-offer__item">
+          <input class="sr-only" type="radio" name="bundle-offer-{{ block.id }}" value="{{ quantity }}" {% if quantity == default_quantity %}checked{% endif %} aria-label="{{ quantity }} {{ block.settings.unit_label | escape }}">
+
+          <span class="bundle-offer__card block-swatch">
+            {%- if block.settings.show_image and image != blank -%}
+              <span class="bundle-offer__media">
+                {{- image | image_url: width: image.width | image_tag: loading: 'lazy', sizes: '48px', widths: '48,96,144', class: 'constrained-image', style: '--image-max-width: 48px' -}}
+                <span class="bundle-offer__count">x{{ quantity }}</span>
+              </span>
+            {%- endif -%}
+
+            <span class="bundle-offer__info v-stack gap-1">
+              <span class="h-stack gap-2 align-center wrap">
+                <span class="h6">{{ quantity }} {{ block.settings.unit_label }}</span>
+
+                {%- if savings_percentage > 0 -%}
+                  <span class="badge badge--on-sale">-{{ savings_percentage }}%</span>
+                {%- endif -%}
+              </span>
+
+              {%- if savings_text != blank -%}
+                <span class="text-sm text-subdued">{{ savings_text }}</span>
+              {%- endif -%}
+            </span>
+
+            <span class="bundle-offer__price v-stack gap-1 text-end">
+              <span class="h6">{{ discounted_total | money }}</span>
+
+              {%- if discount_amount > 0 -%}
+                <span class="text-sm text-subdued line-through">{{ regular_total | money }}</span>
+              {%- endif -%}
+            </span>
+          </span>
+
+          {%- if tier_tag != blank -%}
+            <span class="bundle-offer__tag badge">{{ tier_tag }}</span>
+          {%- endif -%}
+        </label>
+      {%- endfor -%}
+    </div>
+  </bundle-offer>
+
+  {%- style -%}
+    .bundle-offer__heading {
+      align-items: center;
+      column-gap: 1rem;
+      display: flex;
+    }
+
+    .bundle-offer__heading:before,
+    .bundle-offer__heading:after {
+      content: "";
+      border-block-start: 1px solid rgb(var(--border-color));
+      flex: 1 1 0;
+    }
+
+    .bundle-offer__item {
+      cursor: pointer;
+      display: block;
+      position: relative;
+    }
+
+    .bundle-offer__card.block-swatch {
+      --swatch-padding: 1rem 1.25rem;
+      color: rgb(var(--text-color));
+      justify-content: space-between;
+      column-gap: 1rem;
+      text-align: start;
+      width: 100%;
+    }
+
+    @media screen and (pointer: fine) {
+      .bundle-offer__item:hover :not(:checked) + .bundle-offer__card {
+        border-color: rgb(var(--text-color) / .6);
+      }
+    }
+
+    .bundle-offer__media {
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .bundle-offer__count {
+      background: rgb(var(--text-color));
+      color: rgb(var(--background));
+      border-radius: 100%;
+      font-size: .625rem;
+      line-height: 1.25rem;
+      text-align: center;
+      width: 1.25rem;
+      height: 1.25rem;
+      position: absolute;
+      inset-block-end: -.25rem;
+      inset-inline-start: -.5rem;
+    }
+
+    .bundle-offer__info {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .bundle-offer__price {
+      flex-shrink: 0;
+    }
+
+    .bundle-offer__tag {
+      background: rgb(var(--bundle-offer-tag-background, var(--button-background-primary)));
+      color: rgb(var(--bundle-offer-tag-text, var(--button-text-primary)));
+      z-index: 1;
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: 1rem;
+      transform: translateY(-50%);
+    }
+  {%- endstyle -%}
+
+  <script type="module">
+    /**
+     * The selected quantity is kept per form across partial rerenders (the element is replaced when the variant
+     * changes), so the customer does not lose the chosen tier.
+     */
+    const selectedQuantities = new Map();
+
+    class BundleOffer extends HTMLElement {
+      #abortController;
+
+      connectedCallback() {
+        this.#abortController = new AbortController();
+        const { signal } = this.#abortController;
+
+        // Only a tier the customer actively picked survives a rerender; otherwise the block default wins
+        const quantity = selectedQuantities.get(this.formId) ?? this.getAttribute('default-quantity');
+        this.#select(quantity, { updateForm: true });
+
+        this.addEventListener('change', this.#onTierChange.bind(this), { signal });
+        document.addEventListener('change', this.#onFormQuantityChange.bind(this), { signal });
+      }
+
+      disconnectedCallback() {
+        this.#abortController.abort();
+      }
+
+      get formId() {
+        return this.getAttribute('form-id');
+      }
+
+      get form() {
+        return document.forms[this.formId];
+      }
+
+      get #formQuantityInput() {
+        return this.form?.elements['quantity'];
+      }
+
+      get #radios() {
+        return Array.from(this.querySelectorAll('input[type="radio"]'));
+      }
+
+      #onTierChange(event) {
+        if (event.target.type !== 'radio') {
+          return;
+        }
+
+        selectedQuantities.set(this.formId, parseInt(event.target.value));
+        this.#select(event.target.value, { updateForm: true });
+      }
+
+      /**
+       * Keeps the tiers in sync if the quantity is changed elsewhere (eg. the theme quantity selector)
+       */
+      #onFormQuantityChange(event) {
+        if (event.target.name !== 'quantity' || event.target.form !== this.form || this.contains(event.target)) {
+          return;
+        }
+
+        selectedQuantities.set(this.formId, parseInt(event.target.value));
+        this.#select(event.target.value, { updateForm: false });
+      }
+
+      #select(quantity, { updateForm }) {
+        quantity = parseInt(quantity);
+
+        if (!quantity) {
+          return;
+        }
+
+        this.#radios.forEach((radio) => radio.checked = parseInt(radio.value) === quantity);
+
+        if (!updateForm) {
+          return;
+        }
+
+        const input = this.#formQuantityInput;
+        const quantitySelector = input?.closest('quantity-selector');
+
+        if (quantitySelector) {
+          quantitySelector.quantity = quantity;
+        } else if (input) {
+          input.value = quantity;
+        } else {
+          this.#ensureHiddenInput().value = quantity;
+        }
+      }
+
+      /**
+       * When the buy buttons block has the quantity selector hidden, the form has no quantity field, so we add one
+       */
+      #ensureHiddenInput() {
+        let input = this.querySelector('input[name="quantity"]');
+
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'quantity';
+          input.setAttribute('form', this.formId);
+          this.append(input);
+        }
+
+        return input;
+      }
+    }
+
+    if (!window.customElements.get('bundle-offer')) {
+      window.customElements.define('bundle-offer', BundleOffer);
+    }
+  </script>
+{%- endif -%}

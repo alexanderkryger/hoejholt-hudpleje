@@ -13,7 +13,7 @@
     assign second_column = ''
   -%}
 
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}"{% if section.settings.anchor_id != blank %} id="{{ section.settings.anchor_id | handleize }}" style="scroll-margin-top: var(--header-height, 0px);"{% endif %}>
     <div class="container section-spacing">
       <div class="rich-text justify-items-{{ section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end' }}">
         {%- for block in section.blocks -%}
@@ -176,6 +176,16 @@
       "id": "text_alignment",
       "label": "t:global.position.content_position",
       "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Anchor"
+    },
+    {
+      "type": "text",
+      "id": "anchor_id",
+      "label": "Anchor ID",
+      "info": "Unique ID so you can link to this section with #id, e.g. \"special-behandlinger\". Spaces and special characters are converted automatically."
     }
   ],
   "blocks": [

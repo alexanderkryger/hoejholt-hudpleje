@@ -15,6 +15,15 @@ Supported variables
 * hide_unit_price: if set to true, we hide the unit price. We do that in the cart drawer to simplify it.
 {%- endcomment -%}
 
+{%- liquid
+  assign line_item_type = line_item.product.type | downcase | strip
+  assign is_free_gift = false
+
+  if settings.gift_enabled and line_item_type == 'gave'
+    assign is_free_gift = true
+  endif
+-%}
+
 <line-item class="line-item">
   {%- if line_item.image != blank -%}
     {{- line_item.image | image_url: width: line_item.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 80px, 96px', widths: '80,96,160,192', class: 'line-item__media' -}}
@@ -29,10 +38,19 @@ Supported variables
               {%- render 'vendor' with line_item.vendor, class: 'subheading text-subdued' -%}
             {%- endif -%}
 
-            {%- if line_item.url != blank -%}
+                    {%- if line_item.url != blank and is_free_gift == false -%}
               <a href="{{ line_item.url }}" class="subheading">{{ line_item.product.title | default: line_item.title }}</a>
             {%- else -%}
               <p class="subheading">{{ line_item.product.title | default: line_item.title }}</p>
+            {%- endif -%}
+
+   {%- if is_free_gift -%}
+              <p class="h-stack gap-2 subheading text-subdued">
+                {%- render 'icon' with 'gift', width: 14 -%}
+                {{- settings.gift_label -}}
+                {%- if line_item.quantity > 1 %} &times;{{ line_item.quantity }}{% endif -%}
+                {%- if settings.gift_value != blank %} &middot; {{ settings.gift_value | times: 100 | money }}{% endif -%}
+              </p>
             {%- endif -%}
 
             {%- if hide_unit_price -%}
@@ -86,7 +104,7 @@ Supported variables
           {%- endif -%}
         </div>
 
-        {%- if show_quantity_selector -%}
+             {%- if show_quantity_selector and is_free_gift == false -%}
           <div class="line-item__quantity-selector">
             <div class="h-stack gap-5">
               {%- render 'quantity-selector', line_item: line_item, show_rules: false -%}

@@ -14,6 +14,13 @@
   #shopify-section-{{ section.id }} + .shopify-section {
     --section-enable-padding-collapsing: 0; /* We turn off the padding collapsing on next section */
   }
+
+  {%- if section.settings.primary_media_border_radius > 0 -%}
+    #shopify-section-{{ section.id }} .section-split__column--image .content-box__background-media {
+      border-radius: {{ section.settings.primary_media_border_radius }}px;
+      overflow: clip;
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
@@ -23,7 +30,7 @@
     {%- endcomment -%}
 
     <div class="section-split__column section-split__column--image {% unless section.settings.add_media_spacing %}section-split__column--flushed{% endunless %}">
-      <div class="content-box h-full">
+      <div class="content-box h-full aspect-{{ section.settings.primary_media_ratio | default: 'auto' }}">
         <div class="content-box__background-media">
           {%- liquid
             if section.settings.primary_video != blank
@@ -110,6 +117,43 @@
               {%- if block.settings.text != blank -%}
                 <div class="max-w-sm" {{ block.shopify_attributes }}>
                   {{- block.settings.text -}}
+                </div>
+              {%- endif -%}
+
+            {%- when 'tillaeg' -%}
+              {%- assign tillaeg_metafield = product.metafields.custom.tillaeg -%}
+
+              {%- if tillaeg_metafield != blank -%}
+                <div class="tillaeg-list v-stack gap-8 w-full max-w-sm" {{ block.shopify_attributes }}>
+                  {%- if block.settings.title != blank -%}
+                    {%- render 'subheading', content: block.settings.title -%}
+                  {%- endif -%}
+
+                  <div class="divide-y">
+                    {%- for tillaeg in tillaeg_metafield.value -%}
+                      {%- liquid
+                        if tillaeg.pris.type == 'money'
+                          if settings.currency_code_enabled
+                            assign tillaeg_price = tillaeg.pris.value | money_with_currency
+                          else
+                            assign tillaeg_price = tillaeg.pris.value | money
+                          endif
+                        else
+                          assign tillaeg_price = tillaeg.pris.value
+                        endif
+                      -%}
+
+                      <div class="tillaeg-list__item h-stack justify-between align-center gap-6">
+                        <span class="tillaeg-list__name medium {{ block.settings.name_size }}">
+                          {%- if block.settings.show_checkmark -%}
+                            {%- render 'icon' with 'success-checkmark', width: 12 -%}
+                          {%- endif -%}
+                          {{- tillaeg.navn.value -}}
+                        </span>
+                        <span class="text-subdued {{ block.settings.price_size }}">{{ tillaeg_price }}</span>
+                      </div>
+                    {%- endfor -%}
+                  </div>
                 </div>
               {%- endif -%}
           {%- endcase -%}
@@ -303,6 +347,31 @@
       "type": "video",
       "id": "primary_video",
       "label": "t:sections.text_with_media.primary_video"
+    },
+    {
+      "type": "select",
+      "id": "primary_media_ratio",
+      "label": "Primært medie format",
+      "info": "Original beholder mediets eget format. På desktop fungerer formatet som minimumshøjde.",
+      "options": [
+        { "value": "auto", "label": "Original" },
+        { "value": "square", "label": "Kvadratisk (1:1)" },
+        { "value": "portrait", "label": "Portræt (4:5)" },
+        { "value": "tall", "label": "Høj (2:3)" },
+        { "value": "short", "label": "Lav (4:3)" },
+        { "value": "video", "label": "Bred (16:9)" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "range",
+      "id": "primary_media_border_radius",
+      "label": "Afrundede hjørner (primært medie)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "image_picker",
@@ -1256,6 +1325,77 @@
           "type": "color",
           "id": "text_color",
           "label": "t:global.text.text"
+        }
+      ]
+    },
+    {
+      "type": "tillaeg",
+      "name": "Tillæg (metafield)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Viser produktets metafield custom.tillaeg (liste af metaobjekter med name og price). Vises kun på produktsider."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.subheading"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_checkmark",
+          "label": "Vis flueben før navn",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "name_size",
+          "label": "Tekststørrelse (navn)",
+          "options": [
+            { "value": "text-xs", "label": "Tekst XS" },
+            { "value": "text-sm", "label": "Tekst S" },
+            { "value": "text-base", "label": "Tekst M" },
+            { "value": "text-lg", "label": "Tekst L" },
+            { "value": "h7", "label": "Overskrift XX-Small" },
+            { "value": "h6", "label": "Overskrift X-Small" },
+            { "value": "h5", "label": "Overskrift Small" },
+            { "value": "h4", "label": "Overskrift Medium" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "price_size",
+          "label": "Tekststørrelse (pris)",
+          "options": [
+            { "value": "text-xs", "label": "Tekst XS" },
+            { "value": "text-sm", "label": "Tekst S" },
+            { "value": "text-base", "label": "Tekst M" },
+            { "value": "text-lg", "label": "Tekst L" },
+            { "value": "h7", "label": "Overskrift XX-Small" },
+            { "value": "h6", "label": "Overskrift X-Small" },
+            { "value": "h5", "label": "Overskrift Small" },
+            { "value": "h4", "label": "Overskrift Medium" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "bottom_left"
         }
       ]
     }

@@ -4709,6 +4709,17 @@ table caption {
   display: flex;
 }
 
+.trustpilot-rating {
+  --trustpilot-rating-radius: min(4px, var(--button-border-radius));
+  border-radius: var(--trustpilot-rating-radius) var(--trustpilot-rating-radius) 0 0;
+  align-items: center;
+  column-gap: .5rem;
+  line-height: normal;
+  padding: .3125rem .5rem;
+  justify-content: center;
+  display: flex;
+}
+
 .social-media {
   align-items: center;
   justify-content: inherit;
@@ -5101,7 +5112,7 @@ product-rerender {
   }
 }
 
-.announcement-bar {
+announcement-bar {
   text-align: center;
   padding: .7rem var(--container-gutter);
   justify-content: safe center;
@@ -5109,6 +5120,11 @@ product-rerender {
   column-gap: .75rem;
   padding-block: .7rem;
   display: flex;
+  position: relative;
+}
+
+.announcement-bar > :is(carousel-prev-button, carousel-next-button) {
+  z-index: 1;
 }
 
 .announcement-bar__message-list {
@@ -5124,6 +5140,16 @@ product-rerender {
 
 .announcement-bar__message-list > :not(.is-selected) {
   visibility: hidden;
+}
+
+.announcement-bar__message {
+  width: 100%;
+}
+
+.announcement-bar__message-link:after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
 @media screen and (min-width: 700px) {
@@ -7254,6 +7280,28 @@ product-rerender {
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: 0;
+}
+
+.product-gallery__media {
+  position: relative;
+}
+
+.product-gallery__media > .product-gallery__custom-badge {
+  --product-gallery-custom-badge-size: 5rem;
+  --product-gallery-custom-badge-offset: .75rem;
+  z-index: 1;
+  pointer-events: none;
+  width: min(var(--product-gallery-custom-badge-size), 30%);
+  position: absolute;
+  inset-block-start: var(--product-gallery-custom-badge-offset);
+  inset-inline-start: var(--product-gallery-custom-badge-offset);
+}
+
+@media screen and (min-width: 700px) {
+  .product-gallery__media > .product-gallery__custom-badge {
+    --product-gallery-custom-badge-size: 7.5rem;
+    --product-gallery-custom-badge-offset: 1.25rem;
+  }
 }
 
 .product-zoom-button {
@@ -10436,4 +10484,47 @@ product-card.product-card.product-card--bordered.product-card--info-inside.color
     a.subheading.text-subdued.link-reversed {
     font-size: 20px;
     color: black;
+}
+
+.authorized-reseller--glass {
+  background: rgb(var(--text-color) / .05);
+  border: 1px solid rgb(var(--text-color) / .1);
+  border-radius: var(--rounded-full);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / .45), inset 0 -1px 0 0 rgb(var(--text-color) / .04), 0 12px 32px -16px rgb(var(--text-color) / .3);
+  padding: .625rem 1.125rem;
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+@supports (color: color-mix(in srgb, white, black)) {
+  .authorized-reseller--glass {
+    background: color-mix(in srgb, rgb(var(--text-color)) 5%, rgb(var(--background) / .6));
+  }
+}
+
+/* Tillæg price list (text-with-media block) */
+.tillaeg-list__item {
+  padding-block: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tillaeg-list__item:first-child {
+  padding-block-start: 0;
+}
+
+.tillaeg-list__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tillaeg-list__name .icon {
+  margin-block: 0;
+  flex-shrink: 0;
+}
+
+.shape--line {
+  width: 1em;
+  height: 0.15em;
+  border-radius: var(--rounded-full);
 }

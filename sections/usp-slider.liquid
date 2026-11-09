@@ -1,0 +1,474 @@
+{%- comment -%}
+----------------------------------------------------------------------------------------------------------------------
+USP SLIDER
+----------------------------------------------------------------------------------------------------------------------
+
+Horizontal carousel of image cards with a badge and a heading, next to an optional vertical section heading.
+
+Built on existing theme patterns:
+* scroll-carousel + floating controls: sections/trust-icons.liquid, sections/blog-posts.liquid, snippets/menu-promo.liquid
+* Card with background media and positioned content: sections/image-with-text-overlay.liquid, sections/media-blocks.liquid
+* Per-card text color: snippets/surface.liquid
+
+Translations live under sections.usp_slider in locales/en.default.schema.json.
+The static CSS below can be moved to assets/theme.css (next to .trust-icons) if preferred.
+{%- endcomment -%}
+
+{%- if section.blocks.size > 0 -%}
+  {%- liquid
+    assign carousel_id = 'usp-slider-carousel-' | append: section.id
+    assign has_header = false
+
+    if section.settings.subheading != blank or section.settings.title != blank
+      assign has_header = true
+    endif
+
+    assign show_arrows = false
+
+    if section.settings.show_arrows and section.blocks.size > 1
+      assign show_arrows = true
+    endif
+  -%}
+
+  <style>
+    #shopify-section-{{ section.id }} {
+      --usp-slider-panel-border-radius: {{ section.settings.panel_border_radius }}px;
+      --usp-slider-card-border-radius: {{ section.settings.card_border_radius }}px;
+      --usp-slider-items-per-row: {{ section.settings.items_per_row }};
+    }
+
+    .usp-slider {
+      --usp-slider-panel-padding: clamp(1.25rem, 4vw, 2.5rem);
+      --usp-slider-gap: 1rem;
+      --usp-slider-item-width: min(20rem, 72vw);
+      padding: var(--usp-slider-panel-padding);
+      border-radius: var(--usp-slider-panel-border-radius);
+      row-gap: 1.5rem;
+      overflow: clip;
+      display: grid;
+    }
+
+    .usp-slider__content {
+      min-width: 0;
+    }
+
+    .usp-slider__carousel {
+      grid: auto / auto-flow var(--usp-slider-item-width);
+      column-gap: var(--usp-slider-gap);
+      margin-inline: calc(-1 * var(--usp-slider-panel-padding));
+      padding-inline: var(--usp-slider-panel-padding);
+      scroll-padding-inline: var(--usp-slider-panel-padding);
+      display: grid;
+    }
+
+    .usp-slider__card {
+      border-radius: var(--usp-slider-card-border-radius);
+      overflow: hidden;
+    }
+
+    /* Keep the badge at the top and let the heading sit in the middle or at the bottom of the card */
+    .usp-slider__card .placement-grid {
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .usp-slider--bleed-end {
+      margin-inline-end: calc(-1 * var(--distance-to-bleed));
+      padding-inline-end: calc(var(--usp-slider-panel-padding) + var(--distance-to-bleed));
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    .usp-slider--bleed-end .usp-slider__carousel {
+      margin-inline-end: calc(-1 * (var(--usp-slider-panel-padding) + var(--distance-to-bleed)));
+    }
+
+    .usp-slider__badge {
+      padding: 0.375rem 0.75rem;
+      border: 1px solid currentColor;
+      line-height: 1;
+      display: inline-block;
+    }
+
+    @media screen and (min-width: 1000px) {
+      .usp-slider {
+        --usp-slider-gap: 1.25rem;
+        --usp-slider-item-width: calc((100% - (var(--usp-slider-items-per-row) - 1) * var(--usp-slider-gap)) / var(--usp-slider-items-per-row));
+        column-gap: 2.5rem;
+        align-items: stretch;
+      }
+
+      .usp-slider--with-header {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      /* vertical-lr + rotate keeps the DOM order (subheading, heading) while reading bottom-to-top with the heading outermost */
+      .usp-slider__header--vertical {
+        writing-mode: vertical-lr;
+        rotate: 180deg;
+      }
+
+      /* The subheading badge is a flex container with max-width: max-content, which in vertical writing mode
+         constrains the block axis instead of the inline axis. Without this, the badge fills the full height and
+         the prose justification (margin-inline: auto) has no effect on it. */
+      .usp-slider__header--vertical .subheading-badge {
+        max-inline-size: max-content;
+      }
+    }
+  </style>
+
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+    <div class="container">
+      <div class="section-spacing">
+        <div class="usp-slider {% if has_header %}usp-slider--with-header{% endif %} {% if section.settings.bleed_end %}usp-slider--bleed-end{% endif %} color-scheme color-scheme--{{ section.settings.panel_color_scheme.id }}">
+          {%- if has_header -%}
+            <div class="usp-slider__header {% if section.settings.vertical_heading %}usp-slider__header--vertical{% endif %}">
+              <div class="prose prose-justify-start {% if section.settings.vertical_heading %}md:prose-justify-{{ section.settings.vertical_heading_alignment }}{% endif %}">
+                {%- render 'subheading', content: section.settings.subheading -%}
+                {%- render 'heading', content: section.settings.title, style: section.settings.heading_tag -%}
+              </div>
+            </div>
+          {%- endif -%}
+
+          <div class="usp-slider__content v-stack gap-6">
+            <div class="floating-controls-container">
+              {%- if show_arrows -%}
+                <carousel-prev-button class="floating-controls__control floating-controls__control--offset md-max:hidden" aria-controls="{{ carousel_id }}">
+                  <button disabled class="circle-button circle-button--xl">
+                    <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                    {%- render 'icon' with 'big-arrow-left', direction_aware: true, width: 14 -%}
+                  </button>
+                </carousel-prev-button>
+              {%- endif -%}
+
+              <scroll-carousel id="{{ carousel_id }}" allow-drag class="usp-slider__carousel scroll-area snap-x">
+                {%- for block in section.blocks -%}
+                  {%- capture card_content -%}
+                    <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
+                      {%- if block.settings.image != blank -%}
+                        {%- render 'media' with block.settings.image, sizes: '(max-width: 999px) 72vw, 33vw', draggable: false, class: 'zoom-image group-hover:zoom' -%}
+                      {%- else -%}
+                        {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
+                      {%- endif -%}
+                    </div>
+
+                    <div class="placement-grid">
+                      {%- if block.settings.badge != blank -%}
+                        <div class="place-self-start">
+                          <span class="usp-slider__badge subheading rounded-full">{{ block.settings.badge }}</span>
+                        </div>
+                      {%- endif -%}
+
+                      {%- if block.settings.title != blank -%}
+                        <div class="{{ section.settings.text_position }} prose prose-justify-start">
+                          {%- render 'heading', content: block.settings.title, style: section.settings.card_heading_style, balance_text: true -%}
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  {%- endcapture -%}
+
+                  <div class="usp-slider__item snap-start" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: section.blocks.size }}" {{ block.shopify_attributes }}>
+                    {%- if block.settings.url != blank -%}
+                      <a href="{{ block.settings.url }}" class="usp-slider__card content-box min-h-full aspect-{{ section.settings.card_aspect_ratio }} @container/content-box group" style="{% render 'surface', text_color: block.settings.text_color %}">
+                        {{- card_content -}}
+                      </a>
+                    {%- else -%}
+                      <div class="usp-slider__card content-box min-h-full aspect-{{ section.settings.card_aspect_ratio }} @container/content-box" style="{% render 'surface', text_color: block.settings.text_color %}">
+                        {{- card_content -}}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                {%- endfor -%}
+              </scroll-carousel>
+
+              {%- if show_arrows -%}
+                <carousel-next-button class="floating-controls__control floating-controls__control--offset md-max:hidden" aria-controls="{{ carousel_id }}">
+                  <button class="circle-button circle-button--xl">
+                    <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                    {%- render 'icon' with 'big-arrow-right', direction_aware: true, width: 14 -%}
+                  </button>
+                </carousel-next-button>
+              {%- endif -%}
+            </div>
+
+            {%- if section.blocks.size > 1 -%}
+              <carousel-navigation class="scroll-marker-group scroll-marker-group--lines justify-self-center md:hidden" aria-controls="{{ carousel_id }}">
+                {%- for block in section.blocks -%}
+                  <button type="button" class="scroll-marker tap-area tap-area--sm" aria-current="{% if forloop.first %}true{% else %}false{% endif %}">
+                    <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
+                  </button>
+                {%- endfor -%}
+              </carousel-navigation>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.usp_slider.name",
+  "class": "shopify-section--usp-slider",
+  "tag": "section",
+  "max_blocks": 8,
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.usp_slider.panel_category"
+    },
+    {
+      "type": "color_scheme",
+      "id": "panel_color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-2"
+    },
+    {
+      "type": "range",
+      "id": "panel_border_radius",
+      "label": "t:sections.usp_slider.border_radius",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "bleed_end",
+      "label": "t:sections.usp_slider.bleed_end",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.usp_slider.heading_category"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "subheading",
+      "label": "t:global.text.subheading",
+      "default": "Better service"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "t:global.text.heading",
+      "default": "Why us"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "t:global.text.heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "X-Large"
+        },
+        {
+          "value": "h3",
+          "label": "Large"
+        },
+        {
+          "value": "h4",
+          "label": "Medium"
+        },
+        {
+          "value": "h5",
+          "label": "Small"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "checkbox",
+      "id": "vertical_heading",
+      "label": "t:sections.usp_slider.vertical_heading",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "vertical_heading_alignment",
+      "label": "t:sections.usp_slider.vertical_heading_alignment",
+      "info": "t:sections.usp_slider.vertical_heading_alignment_info",
+      "options": [
+        {
+          "value": "end",
+          "label": "t:sections.usp_slider.vertical_heading_alignment_options.top"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.usp_slider.vertical_heading_alignment_options.center"
+        },
+        {
+          "value": "start",
+          "label": "t:sections.usp_slider.vertical_heading_alignment_options.bottom"
+        }
+      ],
+      "default": "end"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.usp_slider.cards_category"
+    },
+    {
+      "type": "range",
+      "id": "items_per_row",
+      "label": "t:sections.usp_slider.items_per_row",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "card_aspect_ratio",
+      "label": "t:sections.usp_slider.card_aspect_ratio",
+      "options": [
+        {
+          "value": "square",
+          "label": "t:sections.usp_slider.card_aspect_ratio_options.square"
+        },
+        {
+          "value": "portrait",
+          "label": "t:sections.usp_slider.card_aspect_ratio_options.portrait"
+        },
+        {
+          "value": "tall",
+          "label": "t:sections.usp_slider.card_aspect_ratio_options.tall"
+        }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "t:sections.usp_slider.border_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "card_heading_style",
+      "label": "t:global.text.heading_size",
+      "options": [
+        {
+          "value": "h4",
+          "label": "Medium"
+        },
+        {
+          "value": "h5",
+          "label": "Small"
+        },
+        {
+          "value": "h6",
+          "label": "X-Small"
+        }
+      ],
+      "default": "h5"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "t:sections.usp_slider.card_heading_position",
+      "options": [
+        {
+          "value": "place-self-center-start",
+          "label": "t:global.position.middle_left"
+        },
+        {
+          "value": "place-self-end-start",
+          "label": "t:global.position.bottom_left"
+        }
+      ],
+      "default": "place-self-center-start"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:global.colors.image_overlay_color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "t:global.colors.image_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "t:sections.usp_slider.show_arrows",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "usp",
+      "name": "t:sections.usp_slider.blocks.usp.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:global.image.image",
+          "info": "t:sections.usp_slider.blocks.usp.image_size_recommendation"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "t:sections.usp_slider.blocks.usp.badge",
+          "default": "Free shipping"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.heading",
+          "default": "Always free shipping no matter where you live."
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:global.text.link"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "t:global.text.text",
+          "default": "#ffffff"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.usp_slider.name",
+      "blocks": [
+        {
+          "type": "usp"
+        },
+        {
+          "type": "usp"
+        },
+        {
+          "type": "usp"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

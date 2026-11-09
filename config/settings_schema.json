@@ -1250,6 +1250,70 @@
       }
     ]
   },
+    {
+    "name": "Gave",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Tilføjer automatisk et gaveprodukt til kurven, når kunden lægger et produkt i kurven, hvor metafeltet custom.free_gift er sat til sandt. Gaveproduktet skal have produkttypen \"gave\"."
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_enabled",
+        "label": "Aktivér gratis gave",
+        "default": false
+      },
+      {
+        "type": "product",
+        "id": "gift_product",
+        "label": "Gaveprodukt",
+        "info": "Produktet skal have produkttypen \"gave\", ellers er funktionen inaktiv."
+      },
+            {
+        "type": "select",
+        "id": "gift_quantity_mode",
+        "label": "Antal gaver",
+        "info": "Bestemmer hvor mange gaver der lægges i kurven, når flere produkter kvalificerer.",
+        "options": [
+          {
+            "value": "per_product",
+            "label": "Én gave pr. kvalificerende produkt"
+          },
+          {
+            "value": "per_item",
+            "label": "Én gave pr. kvalificerende stk."
+          }
+        ],
+        "default": "per_product",
+        "visible_if": "{{ settings.gift_enabled }}"
+      },
+      {
+        "type": "range",
+        "id": "gift_max_quantity",
+        "label": "Maks. antal gaver",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 5,
+        "visible_if": "{{ settings.gift_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "gift_label",
+        "label": "Gavetekst",
+        "default": "Gratis gave",
+        "visible_if": "{{ settings.gift_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "gift_value",
+        "label": "Gaveværdi",
+        "info": "Angiv beløbet i butikkens hovedvaluta uden valutakode. F.eks. 299",
+        "placeholder": "F.eks.: 299",
+        "visible_if": "{{ settings.gift_enabled }}"
+      }
+    ]
+  },
   {
     "name": "t:theme_settings.social_media.name",
     "settings": [

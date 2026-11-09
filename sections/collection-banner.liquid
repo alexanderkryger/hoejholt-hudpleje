@@ -24,10 +24,10 @@
             <a href="{{ link.url }}" class="collection-quick-navigation__item {% if link.active %}is-selected{% endif %} group">
               {%- liquid
                 case link.type
-                  when 'article_link', 'collection_link':
+                  when 'article_link', 'collection_link'
                     assign quick_navigation_image = link.object.image
 
-                  when 'product_link':
+                  when 'product_link'
                     assign quick_navigation_image = link.object.featured_media
                 endcase
               -%}
@@ -321,4 +321,16 @@
     }
   ]
 }
-{% endschema %}
+{% endschema %}{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "                  when 'article_link', 'collection_link':"
+  to: "                  when 'article_link', 'collection_link'"
+  position: 1205..1261
+- from: "                  when 'product_link':"
+  to: "                  when 'product_link'"
+  position: 1333..1370
+{%- endcomment -%}

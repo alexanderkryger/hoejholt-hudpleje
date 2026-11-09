@@ -321,6 +321,30 @@
           "id": "show_taxes_notice",
           "label": "t:sections.main_product.blocks.price.show_taxes_notice",
           "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_savings",
+          "label": "t:sections.main_product.blocks.price.show_savings",
+          "info": "t:sections.main_product.blocks.price.show_savings_info",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "savings_display",
+          "label": "t:theme_settings.product_card.show_discount_as",
+          "options": [
+            {
+              "value": "percentage",
+              "label": "t:theme_settings.product_card.show_discount_as_options.percentage"
+            },
+            {
+              "value": "saving",
+              "label": "t:theme_settings.product_card.show_discount_as_options.saving"
+            }
+          ],
+          "default": "percentage",
+          "visible_if": "{{ block.settings.show_savings }}"
         }
       ]
     },
@@ -338,6 +362,46 @@
           "id": "show_empty",
           "label": "t:sections.main_product.blocks.rating.show_if_no_reviews",
           "default": false
+        }
+      ]
+    },
+    {
+      "type": "trustpilot_rating",
+      "name": "Trustpilot anmeldelser",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "color",
+          "id": "star_color",
+          "label": "Stjernefarve",
+          "default": "#31b314"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Antal stjerner",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Tekst",
+          "default": "321 anmeldelser"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link",
+          "info": "Fx jeres Trustpilot-side. Åbnes i ny fane."
         }
       ]
     },
@@ -392,6 +456,13 @@
           "type": "checkbox",
           "id": "hide_sold_out_variants",
           "label": "t:sections.main_product.blocks.variant_picker.hide_sold_out_variants",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_single_value_options",
+          "label": "t:sections.main_product.blocks.variant_picker.hide_single_value_options",
+          "info": "t:sections.main_product.blocks.variant_picker.hide_single_value_options_info",
           "default": false
         },
         {
@@ -818,6 +889,238 @@
       "type": "color",
       "id": "payment_button_text_color",
       "label": "Betalingsknap tekstfarve"
+    }
+  ]
+},
+{
+  "type": "bundle_offer",
+  "name": "Mængderabat (bundle)",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Blokken ændrer kun antallet i produktformularen. Selve rabatten oprettes som automatisk rabat under Rabatter → \"Beløb fra produkter\" med \"Minimum antal varer\" – én rabat pr. trin, uden kombination med andre produktrabatter. Procent/beløb her skal matche rabatterne."
+    },
+    {
+      "type": "paragraph",
+      "content": "Anbefaling: slå \"Vis antalvælger\" fra i Køb-knapper-blokken, så antallet kun vælges her."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "Overskrift",
+      "default": "Bestil til dig selv, partneren og familien"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Undertekst",
+      "default": "Vi anbefaler at skifte din handske hver 3-4 måned."
+    },
+    {
+      "type": "text",
+      "id": "unit_label",
+      "label": "Enhed",
+      "default": "stk."
+    },
+    {
+      "type": "text",
+      "id": "savings_text",
+      "label": "Besparelsestekst",
+      "info": "[amount] erstattes med beløbet.",
+      "default": "Du sparer [amount]"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Vis produktbillede",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "default_tier",
+      "label": "Forvalgt trin",
+      "options": [
+        { "value": "1", "label": "Trin 1" },
+        { "value": "2", "label": "Trin 2" },
+        { "value": "3", "label": "Trin 3" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "header",
+      "content": "Etiket"
+    },
+    {
+      "type": "color",
+      "id": "tag_background",
+      "label": "Baggrund",
+      "info": "Tom = primær knapfarve"
+    },
+    {
+      "type": "color",
+      "id": "tag_text_color",
+      "label": "Tekstfarve"
+    },
+    {
+      "type": "header",
+      "content": "Trin 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier_1_enabled",
+      "label": "Vis trin",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "tier_1_quantity",
+      "label": "Antal",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ block.settings.tier_1_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "tier_1_discount_type",
+      "label": "Rabattype",
+      "options": [
+        { "value": "none", "label": "Ingen" },
+        { "value": "percentage", "label": "Procent" },
+        { "value": "amount", "label": "Kr. pr. stk." }
+      ],
+      "default": "none",
+      "visible_if": "{{ block.settings.tier_1_enabled }}"
+    },
+    {
+      "type": "number",
+      "id": "tier_1_discount_value",
+      "label": "Rabat",
+      "info": "Procent eller kr. pr. stk. – skal matche den automatiske rabat",
+      "visible_if": "{{ block.settings.tier_1_enabled and block.settings.tier_1_discount_type != 'none' }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_1_tag",
+      "label": "Etiket",
+      "info": "F.eks. \"Mest populær\"",
+      "visible_if": "{{ block.settings.tier_1_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_1_note",
+      "label": "Tekst efter besparelse",
+      "info": "F.eks. \"+ fri fragt\"",
+      "visible_if": "{{ block.settings.tier_1_enabled }}"
+    },
+    {
+      "type": "header",
+      "content": "Trin 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier_2_enabled",
+      "label": "Vis trin",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "tier_2_quantity",
+      "label": "Antal",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 2,
+      "visible_if": "{{ block.settings.tier_2_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "tier_2_discount_type",
+      "label": "Rabattype",
+      "options": [
+        { "value": "none", "label": "Ingen" },
+        { "value": "percentage", "label": "Procent" },
+        { "value": "amount", "label": "Kr. pr. stk." }
+      ],
+      "default": "percentage",
+      "visible_if": "{{ block.settings.tier_2_enabled }}"
+    },
+    {
+      "type": "number",
+      "id": "tier_2_discount_value",
+      "label": "Rabat",
+      "info": "Procent eller kr. pr. stk. – skal matche den automatiske rabat",
+      "default": 15,
+      "visible_if": "{{ block.settings.tier_2_enabled and block.settings.tier_2_discount_type != 'none' }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_2_tag",
+      "label": "Etiket",
+      "default": "Mest populær",
+      "visible_if": "{{ block.settings.tier_2_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_2_note",
+      "label": "Tekst efter besparelse",
+      "visible_if": "{{ block.settings.tier_2_enabled }}"
+    },
+    {
+      "type": "header",
+      "content": "Trin 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier_3_enabled",
+      "label": "Vis trin",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "tier_3_quantity",
+      "label": "Antal",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 3,
+      "visible_if": "{{ block.settings.tier_3_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "tier_3_discount_type",
+      "label": "Rabattype",
+      "options": [
+        { "value": "none", "label": "Ingen" },
+        { "value": "percentage", "label": "Procent" },
+        { "value": "amount", "label": "Kr. pr. stk." }
+      ],
+      "default": "percentage",
+      "visible_if": "{{ block.settings.tier_3_enabled }}"
+    },
+    {
+      "type": "number",
+      "id": "tier_3_discount_value",
+      "label": "Rabat",
+      "info": "Procent eller kr. pr. stk. – skal matche den automatiske rabat",
+      "default": 23,
+      "visible_if": "{{ block.settings.tier_3_enabled and block.settings.tier_3_discount_type != 'none' }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_3_tag",
+      "label": "Etiket",
+      "default": "Gratis fragt",
+      "visible_if": "{{ block.settings.tier_3_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "tier_3_note",
+      "label": "Tekst efter besparelse",
+      "default": "+ fri fragt",
+      "visible_if": "{{ block.settings.tier_3_enabled }}"
     }
   ]
 },
@@ -1651,6 +1954,176 @@
           "id": "liquid",
           "label": "t:global.code.liquid",
           "info": "t:global.code.liquid_info"
+        }
+      ]
+    },
+    {
+      "type": "founder_statement",
+      "name": "t:sections.main_product.blocks.founder_statement.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_product.blocks.founder_statement.instructions"
+        },
+        {
+          "type": "text",
+          "id": "metafield",
+          "label": "t:sections.main_product.blocks.founder_statement.metafield",
+          "info": "t:sections.main_product.blocks.founder_statement.metafield_info",
+          "default": "custom.produktudtalelse"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:global.image.image",
+          "info": "t:sections.main_product.blocks.founder_statement.image_size_recommendation"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "author",
+          "label": "t:sections.main_product.blocks.founder_statement.author",
+          "default": "Simone Højholt • Founder"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_quotation_mark",
+          "label": "t:sections.main_product.blocks.founder_statement.show_quotation_mark",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "text_size",
+          "label": "t:sections.main_product.blocks.founder_statement.text_size",
+          "options": [
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            },
+            {
+              "value": "text-sm",
+              "label": "Body text"
+            }
+          ],
+          "default": "h6"
+        }
+      ]
+    },
+    {
+      "type": "authorized_reseller",
+      "name": "t:sections.main_product.blocks.authorized_reseller.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_product.blocks.authorized_reseller.instructions"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:global.text.text",
+          "default": "Autoriseret forhandler af [vendor]"
+        },
+        {
+          "type": "checkbox",
+          "id": "glass_effect",
+          "label": "t:sections.main_product.blocks.authorized_reseller.glass_effect",
+          "default": true
+        },
+        {
+          "type": "text_alignment",
+          "id": "text_alignment",
+          "label": "t:global.text.alignment",
+          "default": "left"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "t:sections.main_product.blocks.authorized_reseller.text_style",
+          "options": [
+            {
+              "value": "subheading",
+              "label": "t:sections.main_product.blocks.authorized_reseller.text_style_options.subheading"
+            },
+            {
+              "value": "text-sm",
+              "label": "t:sections.main_product.blocks.authorized_reseller.text_style_options.text"
+            },
+            {
+              "value": "text-sm text-subdued",
+              "label": "t:sections.main_product.blocks.authorized_reseller.text_style_options.text_subdued"
+            }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:global.icons.icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "t:global.icons.icon_options.none"
+            },
+            {
+              "value": "picto-checked",
+              "label": "t:global.icons.icon_options.checked"
+            },
+            {
+              "value": "picto-secure",
+              "label": "t:global.icons.icon_options.secure"
+            },
+            {
+              "value": "picto-star",
+              "label": "t:global.icons.icon_options.star"
+            },
+            {
+              "value": "picto-like",
+              "label": "t:global.icons.icon_options.like"
+            },
+            {
+              "value": "picto-ticket-star",
+              "label": "t:global.icons.icon_options.ticket_star"
+            },
+            {
+              "value": "picto-discount-badge",
+              "label": "t:global.icons.icon_options.discount_badge"
+            },
+            {
+              "value": "picto-store",
+              "label": "t:global.icons.icon_options.store"
+            }
+          ],
+          "default": "picto-checked"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "t:global.icons.custom_icon"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 12,
+          "max": 48,
+          "step": 2,
+          "unit": "px",
+          "label": "t:global.icons.icon_width",
+          "default": 20
         }
       ]
     },

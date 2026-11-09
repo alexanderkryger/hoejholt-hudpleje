@@ -1,0 +1,299 @@
+{%- comment -%}
+----------------------------------------------------------------------------------------------------------------------
+FREE GIFT (BEHAVIOUR)
+----------------------------------------------------------------------------------------------------------------------
+
+Defines the <free-gift> custom element, which keeps the cart in sync with the state rendered by sections/free-gift.liquid.
+
+Concurrency:
+  * a mutex (#isSyncing) guarantees that only one reconciliation runs at a time; changes arriving during a sync set a
+    dirty flag which triggers exactly one extra pass
+  * every pass recomputes from server-rendered state, never from local assumptions
+  * MAX_SYNC_PASSES caps the reconciliation loop
+  * the element dispatches "cart:change" with baseEvent "free-gift:change" and ignores that base event, so it can never
+    react to its own mutations
+{%- endcomment -%}
+
+{%- if settings.gift_enabled and settings.gift_product != blank -%}
+  <script type="module">
+    import { extractSectionId } from 'theme';
+
+    const MAX_SYNC_PASSES = 3;
+    const RELOAD_GUARD_KEY = 'free-gift:reload-count';
+
+    export class FreeGift extends HTMLElement {
+      #sectionId;
+      #abortController;
+      #isSyncing = false;
+      #isDirty = false;
+
+      connectedCallback() {
+        this.#sectionId ??= extractSectionId(this);
+        this.#abortController = new AbortController();
+
+        document.addEventListener('cart:prepare-bundled-sections', this.#onBundleSection.bind(this), {signal: this.#abortController.signal});
+        document.addEventListener('cart:change', this.#onCartChange.bind(this), {signal: this.#abortController.signal});
+        document.addEventListener('cart:refresh', this.#onCartRefresh.bind(this), {signal: this.#abortController.signal});
+
+        // Reconcile on load, based on the server-rendered state. This also covers the cart page, where the theme
+        // reloads the page instead of dispatching "cart:change".
+        this.#sync(this.#readState(this));
+      }
+
+      disconnectedCallback() {
+        this.#abortController?.abort();
+      }
+
+      /**
+       * Makes sure our own section is re-rendered by any cart mutation performed by the theme
+       */
+      #onBundleSection(event) {
+        event.detail.sections.add(this.#sectionId);
+      }
+
+      #onCartChange(event) {
+        if (event.detail?.baseEvent === 'free-gift:change') {
+          return; // Never react to our own mutation
+        }
+
+        this.#sync(this.#parseState(event.detail?.cart?.['sections']?.[this.#sectionId]));
+      }
+
+      #onCartRefresh() {
+        this.#sync(null);
+      }
+
+      /**
+       * ---------------------------------------------------------------------------------------------------------------
+       * STATE
+       * ---------------------------------------------------------------------------------------------------------------
+       */
+
+      #readState(root) {
+        try {
+          return JSON.parse(root?.querySelector('[data-free-gift-state]')?.textContent);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      #parseState(markup) {
+        if (!markup) {
+          return null;
+        }
+
+        const document_ = (new DOMParser()).parseFromString(markup, 'text/html');
+        return this.#readState(document_.querySelector('free-gift'));
+      }
+
+      async #fetchState() {
+        try {
+          const response = await fetch(`${Shopify.routes.root}?section_id=${this.#sectionId}`);
+          return response.ok ? this.#parseState(await response.text()) : null;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      #persistState(state) {
+        const stateElement = this.querySelector('[data-free-gift-state]');
+
+        if (stateElement) {
+          stateElement.textContent = JSON.stringify(state);
+        }
+      }
+
+      /**
+       * ---------------------------------------------------------------------------------------------------------------
+       * RECONCILIATION
+       * ---------------------------------------------------------------------------------------------------------------
+       */
+
+      async #sync(initialState = null) {
+        if (this.#isSyncing) {
+          this.#isDirty = true; // A change arrived mid-flight, we will do one more pass
+          return;
+        }
+
+        this.#isSyncing = true;
+        let state = initialState;
+
+        try {
+          for (let pass = 0; pass < MAX_SYNC_PASSES; pass++) {
+            this.#isDirty = false;
+            state ??= await this.#fetchState();
+
+            if (!state) {
+              break;
+            }
+
+            this.#persistState(state);
+            const operation = this.#resolveOperation(state);
+
+            if (!operation) {
+              this.#clearReloadGuard();
+
+              if (!this.#isDirty) {
+                break;
+              }
+
+              state = null;
+              continue;
+            }
+
+            const cart = await this.#applyOperation(operation);
+
+            if (!cart) {
+              break; // The request failed, we stop rather than retrying in a loop
+            }
+
+            this.#notify(cart);
+
+            if (this.#reloadCartPage()) {
+              return;
+            }
+
+            state = this.#parseState(cart['sections']?.[this.#sectionId]);
+          }
+        } finally {
+          this.#isSyncing = false;
+        }
+      }
+
+      /**
+       * Returns the single operation needed to bring the cart in line with the state, or null when nothing to do.
+       * All gifts are kept on one consolidated line, whose quantity must match the target computed in Liquid.
+       */
+      #resolveOperation(state) {
+        const giftLines = state.gift_lines || [],
+              targetQuantity = state.gift_available ? (state.target_quantity || 0) : 0,
+              updates = {};
+
+        if (!state.gift_variant_id || targetQuantity < 1) {
+          giftLines.forEach((line) => updates[line.key] = 0);
+          return Object.keys(updates).length > 0 ? {type: 'update', updates} : null;
+        }
+
+        const matchingLines = giftLines.filter((line) => line.variant_id === state.gift_variant_id);
+
+        // Any gift line pointing to another product, plus every duplicate line, is removed
+        giftLines.filter((line) => line.variant_id !== state.gift_variant_id).forEach((line) => updates[line.key] = 0);
+        matchingLines.slice(1).forEach((line) => updates[line.key] = 0);
+
+        if (matchingLines.length > 0 && matchingLines[0].quantity !== targetQuantity) {
+          updates[matchingLines[0].key] = targetQuantity;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          return {type: 'update', updates};
+        }
+
+        return matchingLines.length === 0 ? {type: 'add', variantId: state.gift_variant_id, quantity: targetQuantity} : null;
+      }
+
+      async #applyOperation(operation) {
+        // Allow every cart-aware component to be re-rendered in the same round trip
+        let sectionsToBundle = new Set();
+        sectionsToBundle.add(this.#sectionId);
+        document.documentElement.dispatchEvent(new CustomEvent('cart:prepare-bundled-sections', {bubbles: true, detail: {sections: sectionsToBundle}}));
+
+        const sections = [...sectionsToBundle].join(','),
+              endpoint = operation.type === 'add' ? 'cart/add.js' : 'cart/update.js',
+                           body = operation.type === 'add'
+                ? {items: [{id: operation.variantId, quantity: operation.quantity}], sections}
+                : {updates: operation.updates, sections};
+
+        try {
+          const response = await fetch(`${Shopify.routes.root}${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest' // Needed for Shopify to check inventory
+            },
+            body: JSON.stringify(body)
+          });
+
+          if (!response.ok) {
+            return null;
+          }
+
+          const responseJson = await response.json();
+
+          if (operation.type !== 'add') {
+            return responseJson; // cart/update.js returns the whole cart
+          }
+
+          // cart/add.js only returns the added items, so we fetch the cart and re-attach the sections
+          const cartContent = await (await fetch(`${Shopify.routes.root}cart.js`)).json();
+          cartContent['sections'] = responseJson['sections'];
+
+          return cartContent;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      /**
+       * We use a dedicated base event so the cart drawer refreshes without opening itself, and so that this component
+       * ignores the change it caused
+       */
+      #notify(cart) {
+        document.documentElement.dispatchEvent(new CustomEvent('cart:change', {
+          bubbles: true,
+          detail: {
+            baseEvent: 'free-gift:change',
+            cart: cart
+          }
+        }));
+      }
+
+      /**
+       * ---------------------------------------------------------------------------------------------------------------
+       * CART PAGE
+       * ---------------------------------------------------------------------------------------------------------------
+       *
+       * On the cart page the theme reloads instead of re-rendering, so we do the same. The counter guarantees that a
+       * mutation which can never settle cannot cause a reload loop.
+       */
+
+      #reloadCartPage() {
+        if (window.themeVariables.settings.pageType !== 'cart') {
+          return false;
+        }
+
+        let reloadCount = 0;
+
+        try {
+          reloadCount = parseInt(sessionStorage.getItem(RELOAD_GUARD_KEY) || '0', 10);
+        } catch (error) {
+          // Safari in private mode does not allow access, we silently fail
+        }
+
+        if (reloadCount >= 2) {
+          return false;
+        }
+
+        try {
+          sessionStorage.setItem(RELOAD_GUARD_KEY, String(reloadCount + 1));
+        } catch (error) {
+          // Safari in private mode does not allow setting item, we silently fail
+        }
+
+        window.location.reload();
+        return true;
+      }
+
+      #clearReloadGuard() {
+        try {
+          sessionStorage.removeItem(RELOAD_GUARD_KEY);
+        } catch (error) {
+          // Safari in private mode does not allow access, we silently fail
+        }
+      }
+    }
+
+    if (!window.customElements.get('free-gift')) {
+      window.customElements.define('free-gift', FreeGift);
+    }
+  </script>
+{%- endif -%}

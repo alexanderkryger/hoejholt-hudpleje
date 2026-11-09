@@ -22,13 +22,13 @@ Supported variables
 
 {%- liquid
   case settings.product_card_style
-    when 'subheading':
+    when 'subheading'
       assign title_class = 'subheading'
 
-    when 'body_text':
+    when 'body_text'
       assign title_class = 'text-sm'
 
-    when 'heading':
+    when 'heading'
       assign title_class = 'heading'
   endcase
 -%}
@@ -69,4 +69,19 @@ Supported variables
       {%- endif -%}
     {%- endif -%}
   </div>
-</div>
+</div>{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "    when 'subheading':"
+  to: "    when 'subheading'"
+  position: 1196..1217
+- from: "    when 'body_text':"
+  to: "    when 'body_text'"
+  position: 1259..1279
+- from: "    when 'heading':"
+  to: "    when 'heading'"
+  position: 1318..1336
+{%- endcomment -%}

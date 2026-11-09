@@ -102,16 +102,11 @@ only way to do it on Shopify right now.
 
             <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: media.position, count: product.media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
 {%- comment -%} // code for product badge {%- endcomment -%}
-{% if product.metafields.custom.product_badge != blank %}
-  <div style="position:absolute; top:0.5rem; left:0.5rem; z-index:2;">
-    <img 
-      src="{{ product.metafields.custom.product_badge | image_url: width: 120 }}" 
-      alt="Badge"
-      width="150"
-      height="150"
-      style="max-width: 150px; height: auto;" />
+{%- if product.metafields.custom.product_badge != blank -%}
+  <div class="product-gallery__custom-badge">
+    {{- product.metafields.custom.product_badge | image_url: width: 300 | image_tag: loading: 'lazy', sizes: '120px', widths: '120,180,240,300', alt: '' -}}
   </div>
-{% endif %}
+{%- endif -%}
               {%- if default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}

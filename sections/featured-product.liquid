@@ -415,6 +415,30 @@
           "id": "show_taxes_notice",
           "label": "t:sections.main_product.blocks.price.show_taxes_notice",
           "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_savings",
+          "label": "t:sections.main_product.blocks.price.show_savings",
+          "info": "t:sections.main_product.blocks.price.show_savings_info",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "savings_display",
+          "label": "t:theme_settings.product_card.show_discount_as",
+          "options": [
+            {
+              "value": "percentage",
+              "label": "t:theme_settings.product_card.show_discount_as_options.percentage"
+            },
+            {
+              "value": "saving",
+              "label": "t:theme_settings.product_card.show_discount_as_options.saving"
+            }
+          ],
+          "default": "percentage",
+          "visible_if": "{{ block.settings.show_savings }}"
         }
       ]
     },
@@ -486,6 +510,13 @@
           "type": "checkbox",
           "id": "hide_sold_out_variants",
           "label": "t:sections.main_product.blocks.variant_picker.hide_sold_out_variants",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_single_value_options",
+          "label": "t:sections.main_product.blocks.variant_picker.hide_single_value_options",
+          "info": "t:sections.main_product.blocks.variant_picker.hide_single_value_options_info",
           "default": false
         },
         {

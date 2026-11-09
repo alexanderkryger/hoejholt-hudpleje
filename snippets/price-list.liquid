@@ -24,33 +24,37 @@ Supported variables
       assign on_sale_price_classes = 'h6 text-on-sale'
       assign compare_at_price_classes = 'h7 line-through'
       assign unit_price_classes = 'subheading text-subdued'
+      assign savings_classes = 'h7 text-on-sale'
 
     when 'card'
       case settings.product_card_style
-        when 'subheading':
+        when 'subheading'
           assign regular_price_classes = 'subheading text-subdued'
           assign on_sale_price_classes = 'subheading text-on-sale'
           assign compare_at_price_classes = 'subheading text-subdued line-through'
           assign unit_price_classes = 'subheading text-subdued'
+          assign savings_classes = 'subheading text-on-sale'
 
-        when 'body_text':
+        when 'body_text'
           assign regular_price_classes = 'text-sm text-subdued'
           assign on_sale_price_classes = 'text-sm text-on-sale'
           assign compare_at_price_classes = 'text-sm text-subdued line-through'
           assign unit_price_classes = 'text-sm text-subdued'
+          assign savings_classes = 'text-sm text-on-sale'
 
-        when 'heading':
+        when 'heading'
           assign regular_price_classes = 'text-subdued'
           assign on_sale_price_classes = 'text-on-sale'
           assign compare_at_price_classes = 'text-subdued line-through'
           assign unit_price_classes = 'text-subdued'
+          assign savings_classes = 'text-on-sale'
       endcase
 
     when 'line_item'
       assign regular_price_classes = 'subheading text-subdued'
       assign on_sale_price_classes = 'subheading text-on-sale'
       assign compare_at_price_classes = 'subheading text-subdued line-through'
-      assign unit_price_classes = 'subheading text-subdued'
+      assign savings_classes = 'subheading text-on-sale'
   endcase
 -%}
 
@@ -71,7 +75,7 @@ Supported variables
       {%- endif -%}
     </sale-price>
 
-    {%- if variant.compare_at_price > variant.price -%}
+   {%- if variant.compare_at_price > variant.price -%}
       <compare-at-price class="{{ compare_at_price_classes }}">
         <span class="sr-only">{{ 'product.price.regular_price' | t }}</span>
 
@@ -81,6 +85,26 @@ Supported variables
           {{- variant.compare_at_price | money -}}
         {%- endif -%}
       </compare-at-price>
+
+      {%- if show_savings -%}
+        {%- liquid
+          if savings_display == 'saving'
+            assign savings_amount = variant.compare_at_price | minus: variant.price
+
+            if settings.currency_code_enabled
+              assign savings = savings_amount | money_with_currency
+            else
+              assign savings = savings_amount | money
+            endif
+          else
+            assign savings = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round | append: '%'
+          endif
+        -%}
+
+        <sale-savings class="{{ savings_classes }}">
+          {{- 'product.general.discount_badge_html' | t: savings: savings -}}
+        </sale-savings>
+      {%- endif -%}
     {%- endif -%}
   {%- elsif line_item != blank -%}
     {%- comment -%}
@@ -190,4 +214,19 @@ Supported variables
       </unit-price>
     {%- endif -%}
   {%- endunless -%}
-</price-list>
+</price-list>{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "        when 'subheading':"
+  to: "        when 'subheading'"
+  position: 1359..1384
+- from: "        when 'body_text':"
+  to: "        when 'body_text'"
+  position: 1728..1752
+- from: "        when 'heading':"
+  to: "        when 'heading'"
+  position: 2081..2103
+{%- endcomment -%}

@@ -1,0 +1,94 @@
+{%- comment -%}
+----------------------------------------------------------------------------------------------------------------------
+FREE GIFT (STATE)
+----------------------------------------------------------------------------------------------------------------------
+
+This section renders no visible content. It exposes the current free gift state of the cart as JSON, and hosts the
+<free-gift> custom element (whose behaviour lives in snippets/free-gift.liquid).
+
+It is rendered statically from layout/theme.liquid, and re-rendered through the Section Rendering API by way of the
+"cart:prepare-bundled-sections" / "cart:change" events, exactly like cart-drawer.liquid and quick-order-list.liquid.
+
+The qualifying state is computed in Liquid because product metafields are not exposed by the /cart.js endpoint. The
+target gift quantity is computed here as well, so the client side only has to enforce a number it is given.
+{%- endcomment -%}
+
+{%- liquid
+  assign gift_product = settings.gift_product
+  assign gift_variant = gift_product.selected_or_first_available_variant
+  assign gift_product_type = gift_product.type | downcase | strip
+
+  assign gift_enabled = false
+
+  if settings.gift_enabled and gift_product != blank and gift_product_type == 'gave'
+    assign gift_enabled = true
+  endif
+-%}
+
+{%- if gift_enabled -%}
+  {%- liquid
+    assign gift_available = false
+
+    if gift_variant != blank and gift_variant.available
+      assign gift_available = true
+    endif
+
+    assign qualifying_count = 0
+    assign qualifying_quantity = 0
+    assign gift_lines_json = ''
+  -%}
+
+  {%- for line_item in cart.items -%}
+    {%- assign line_item_type = line_item.product.type | downcase | strip -%}
+
+    {%- if line_item_type == 'gave' -%}
+      {%- if gift_lines_json != '' -%}
+        {%- assign gift_lines_json = gift_lines_json | append: ',' -%}
+      {%- endif -%}
+
+      {%- capture gift_line_json -%}{"key":{{ line_item.key | json }},"variant_id":{{ line_item.variant_id }},"quantity":{{ line_item.quantity }}}{%- endcapture -%}
+      {%- assign gift_lines_json = gift_lines_json | append: gift_line_json -%}
+        {%- elsif line_item.product.metafields.custom.free_gift.value or line_item.variant.metafields.custom.free_gift.value -%}
+      {%- assign qualifying_count = qualifying_count | plus: 1 -%}
+      {%- assign qualifying_quantity = qualifying_quantity | plus: line_item.quantity -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- liquid
+    assign target_quantity = 0
+
+    if gift_available
+      if settings.gift_quantity_mode == 'per_item'
+        assign target_quantity = qualifying_quantity
+      else
+        assign target_quantity = qualifying_count
+      endif
+
+      assign target_quantity = target_quantity | at_most: settings.gift_max_quantity
+
+      comment
+        Never ask for more units than Shopify would accept, otherwise the client would keep trying to reach a target
+        that can never be met.
+      endcomment
+
+      if gift_variant.inventory_management != blank and gift_variant.inventory_policy == 'deny'
+        assign target_quantity = target_quantity | at_most: gift_variant.inventory_quantity
+      endif
+
+      assign target_quantity = target_quantity | at_least: 0
+    endif
+  -%}
+
+  <free-gift hidden>
+    <script type="application/json" data-free-gift-state>{"gift_variant_id":{{ gift_variant.id | default: 0 }},"gift_available":{{ gift_available }},"qualifying_count":{{ qualifying_count }},"target_quantity":{{ target_quantity }},"gift_lines":[{{ gift_lines_json }}]}</script>
+  </free-gift>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Free gift",
+  "tag": "div",
+  "class": "shopify-section--free-gift",
+  "settings": []
+}
+{% endschema %}

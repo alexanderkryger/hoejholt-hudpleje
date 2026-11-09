@@ -43,15 +43,15 @@ Supported variables
   endif
 
   case settings.product_card_style
-    when 'subheading':
+    when 'subheading'
       assign vendor_class = 'subheading text-subdued'
       assign title_class = 'subheading'
 
-    when 'body_text':
+    when 'body_text'
       assign vendor_class = 'text-sm text-subdued'
       assign title_class = 'text-sm'
 
-    when 'heading':
+    when 'heading'
       assign vendor_class = 'heading text-subdued'
       assign title_class = 'heading'
   endcase
@@ -79,16 +79,16 @@ Supported variables
 
   {%- liquid
     case settings.product_card_info_horizontal_alignment
-      when 'start':
+      when 'start'
         assign info_alignment_class = 'v-stack gap-2.5 justify-items-start text-start'
 
-      when 'center':
+      when 'center'
         assign info_alignment_class = 'v-stack gap-2.5 justify-items-center text-center'
 
-      when 'end':
+      when 'end'
         assign info_alignment_class = 'v-stack gap-2.5 justify-items-end text-end'
 
-      when 'split':
+      when 'split'
         assign info_alignment_class = 'h-stack gap-2.5 align-start justify-between wrap'
     endcase
   -%}
@@ -128,4 +128,31 @@ Supported variables
       </div>
     </div>
   </div>
-</product-card>
+</product-card>{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "    when 'subheading':"
+  to: "    when 'subheading'"
+  position: 2712..2733
+- from: "    when 'body_text':"
+  to: "    when 'body_text'"
+  position: 2829..2849
+- from: "    when 'heading':"
+  to: "    when 'heading'"
+  position: 2939..2957
+- from: "      when 'start':"
+  to: "      when 'start'"
+  position: 4145..4163
+- from: "      when 'center':"
+  to: "      when 'center'"
+  position: 4252..4271
+- from: "      when 'end':"
+  to: "      when 'end'"
+  position: 4362..4378
+- from: "      when 'split':"
+  to: "      when 'split'"
+  position: 4463..4481
+{%- endcomment -%}

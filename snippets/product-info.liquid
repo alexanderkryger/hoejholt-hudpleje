@@ -132,10 +132,17 @@ Supported variables
               -%}
             {%- endif -%}
 
-          {%- when 'price' -%}
+             {%- when 'price' -%}
             {%- if product.selected_or_first_available_variant != nil -%}
               <div class="v-stack gap-2">
-                {%- render 'price-list', product: product, variant: product.selected_or_first_available_variant, alignment: alignment, context: 'product' -%}
+                {%- render 'price-list',
+                    product: product,
+                    variant: product.selected_or_first_available_variant,
+                    alignment: alignment,
+                    context: 'product',
+                    show_savings: block.settings.show_savings,
+                    savings_display: block.settings.savings_display
+                -%}
 
                 {%- if block.settings.show_taxes_notice -%}
                   <p class="subheading text-subdued">
@@ -171,6 +178,27 @@ Supported variables
             {%- else -%}
               {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
             {%- endif -%}
+
+          {%- when 'trustpilot_rating' -%}
+            <div class="trustpilot-rating color-scheme color-scheme--{{ block.settings.color_scheme.id }}">
+              <div class="rating-badge__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
+                {%- for i in (1..5) -%}
+                  {%- if i <= block.settings.rating -%}
+                    {%- render 'icon' with 'trustpilot-star', fill_color: block.settings.star_color -%}
+                  {%- else -%}
+                    {%- render 'icon' with 'trustpilot-star-empty', fill_color: block.settings.star_color -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+
+              {%- if block.settings.text != blank -%}
+                {%- if block.settings.url != blank -%}
+                <a href="{{ block.settings.url }}" class="link-faded-reverse text-sm" target="_blank" rel="noopener">{{ block.settings.text | escape }}</a>
+                {%- else -%}
+                  <span class="text-sm">{{ block.settings.text | escape }}</span>
+                {%- endif -%}
+              {%- endif -%}
+            </div>
 
           {%- when 'separator' -%}
             <hr>
@@ -212,6 +240,7 @@ Supported variables
                   context: context, 
                   alignment: alignment,
                   hide_sold_out_variants: block.settings.hide_sold_out_variants,
+                  hide_single_value_options: block.settings.hide_single_value_options,
                   separate_options: block.settings.separate_options,
                   selector_style: block.settings.selector_style,
                   swatch_selector_style: block.settings.swatch_selector_style,
@@ -386,6 +415,11 @@ Supported variables
           {%- when 'volume_pricing' -%}
             {%- render 'volume-pricing-table', variant: product.selected_or_first_available_variant -%}
 
+            {%- when 'bundle_offer' -%}
+  {%- if product != blank -%}
+    {%- render 'product-bundle-offer', product: product, block: block, form_id: product_form_id -%}
+  {%- endif -%}
+
           {%- when 'pickup_availability' -%}
             {%- if product != blank -%}
               {%- render 'pickup-availability', product_variant: product.selected_or_first_available_variant, alignment: alignment -%}
@@ -457,6 +491,60 @@ Supported variables
             {%- if block.settings.liquid != blank -%}
               <div class="liquid">
                 {{- block.settings.liquid -}}
+              </div>
+            {%- endif -%}
+
+          {%- when 'founder_statement' -%}
+            {%- liquid
+              assign metafield_parts = block.settings.metafield | split: '.'
+              assign metafield_namespace = metafield_parts | first
+              assign metafield_key = metafield_parts | last
+              assign statement = product.metafields[metafield_namespace][metafield_key]
+            -%}
+
+            {%- if statement != blank -%}
+              <div class="offer-item color-scheme color-scheme--{{ block.settings.color_scheme.id }} text-{{ alignment }} justify-items-{{ alignment }}">
+                <div class="h-stack gap-4 align-start justify-{{ alignment }}">
+                  {%- if block.settings.image != blank -%}
+                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '64px', widths: '64,128,192', class: 'press-carousel__avatar shrink-0' -}}
+                  {%- endif -%}
+
+                  <div class="v-stack gap-1 justify-items-{{ alignment }}">
+                    {%- if block.settings.show_quotation_mark -%}
+                      <div class="prose prose-justify-{{ alignment }}">
+                        <blockquote class="{{ block.settings.text_size }}">
+                          {{- statement | metafield_tag -}}
+                        </blockquote>
+                      </div>
+                    {%- else -%}
+                      <div class="{{ block.settings.text_size }}">
+                        {{- statement | metafield_tag -}}
+                      </div>
+                    {%- endif -%}
+
+                    {%- if block.settings.author != blank -%}
+                      <p class="subheading text-subdued">{{ block.settings.author }}</p>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </div>
+            {%- endif -%}
+
+          {%- when 'authorized_reseller' -%}
+            {%- if product.vendor != blank and block.settings.text != blank -%}
+              {%- liquid
+                assign reseller_text = block.settings.text | replace: '[vendor]', product.vendor
+                assign reseller_alignment = block.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
+              -%}
+
+              <div class="authorized-reseller h-stack gap-3 justify-{{ reseller_alignment }} {% if block.settings.glass_effect %}authorized-reseller--glass{% endif %}">
+                {%- if block.settings.custom_icon != blank -%}
+                  {%- render 'icon', image: block.settings.custom_icon, width: block.settings.icon_width, class: 'shrink-0' -%}
+                {%- elsif block.settings.icon != 'none' -%}
+                  {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, class: 'shrink-0' -%}
+                {%- endif -%}
+
+                <p class="{{ block.settings.text_style }}">{{ reseller_text }}</p>
               </div>
             {%- endif -%}
 

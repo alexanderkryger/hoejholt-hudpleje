@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "global": {
     "colors": {
@@ -1371,7 +1380,9 @@
         },
         "price": {
           "name": "Price",
-          "show_taxes_notice": "Show taxes notice"
+          "show_taxes_notice": "Show taxes notice",
+          "show_savings": "Show savings",
+          "show_savings_info": "Only shown when the selected variant has a compare at price."
         },
         "payment_terms": {
           "name": "Payment installments",
@@ -1392,6 +1403,8 @@
         "variant_picker": {
           "name": "Variant picker",
           "hide_sold_out_variants": "Hide sold out variants",
+          "hide_single_value_options": "Hide options with a single value",
+          "hide_single_value_options_info": "The variant picker is hidden entirely when no option has more than one value.",
           "separate_options": "Separate options by border",
           "selector_style": "Selector style",
           "selector_style_options": {
@@ -1539,6 +1552,27 @@
         },
         "liquid": {
           "name": "Liquid"
+        },
+        "founder_statement": {
+          "name": "Founder statement",
+          "instructions": "The statement is pulled from a product metafield. The block is hidden automatically on products where the metafield is empty.",
+          "metafield": "Metafield",
+          "metafield_info": "Format: namespace.key (e.g. custom.produktudtalelse)",
+          "image_size_recommendation": "400 x 400px .jpg recommended",
+          "author": "Author",
+          "show_quotation_mark": "Show quotation mark",
+          "text_size": "Text size"
+        },
+        "authorized_reseller": {
+          "name": "Authorized reseller",
+          "instructions": "Use [vendor] in the text to insert the product vendor. The block is hidden automatically on products without a vendor.",
+          "glass_effect": "Glass effect",
+          "text_style": "Text style",
+          "text_style_options": {
+            "subheading": "Subheading",
+            "text": "Body text",
+            "text_subdued": "Body text (subdued)"
+          }
         },
         "modal": {
           "name": "Modal",
@@ -2115,6 +2149,38 @@
       "blocks": {
         "item": {
           "name": "Item"
+        }
+      }
+    },
+    "usp_slider": {
+      "name": "USP slider",
+      "panel_category": "Panel",
+      "border_radius": "Border radius",
+"bleed_end": "Extend panel to the right edge",
+      "heading_category": "Heading",
+      "vertical_heading": "Show heading vertically (desktop)",
+      "vertical_heading_alignment": "Vertical heading alignment",
+      "vertical_heading_alignment_info": "Only applies when the heading is shown vertically.",
+      "vertical_heading_alignment_options": {
+        "top": "Top",
+        "center": "Center",
+        "bottom": "Bottom"
+      },
+      "cards_category": "Cards",
+      "items_per_row": "Cards per row (desktop)",
+      "card_aspect_ratio": "Card aspect ratio",
+      "card_aspect_ratio_options": {
+        "square": "Square (1:1)",
+        "portrait": "Portrait (4:5)",
+        "tall": "Tall (2:3)"
+      },
+      "card_heading_position": "Heading position",
+      "show_arrows": "Show arrows on hover (desktop)",
+      "blocks": {
+        "usp": {
+          "name": "USP",
+          "image_size_recommendation": "1200 x 1500px .jpg recommended",
+          "badge": "Badge"
         }
       }
     },

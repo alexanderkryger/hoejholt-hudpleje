@@ -90,7 +90,14 @@ Supported variables
           {%- endif -%}
         </div>
 
-        {%- if resolved_option_selector_style == 'dropdown' -%}
+        {%- if hide_single_value_options and option.values.size == 1 -%}
+          {%- liquid
+            assign param_name = form_id | append: '-option' | append: option.position
+            assign single_option_value = option.values | first
+          -%}
+
+          <input class="sr-only" type="radio" id="{{ param_name }}-{{ single_option_value.id }}" form="{{ form_id }}" name="{{ param_name }}" data-option-position="{{ option.position }}" value="{{ single_option_value.id }}" checked>
+        {%- elsif resolved_option_selector_style == 'dropdown' -%}
           <div class="relative">
             {%- capture popover_id -%}popover-variant-dropdown-{{ section.id }}-{{ product.id }}-{{ option.position }}{%- endcapture -%}
 

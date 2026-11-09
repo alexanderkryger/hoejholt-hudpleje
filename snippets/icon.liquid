@@ -130,6 +130,18 @@ Supported variables
         <path fill="{{ fill_color | default: settings.product_rating_color }}" fill-opacity="0.4" d="m6.5 0 1.607 4.623 4.893.1-3.9 2.956 1.417 4.685L6.5 9.568l-4.017 2.796L3.9 7.679 0 4.723l4.893-.1L6.5 0Z"/>
       </svg>
 
+    {%- when 'trustpilot-star' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <rect width="16" height="16" rx="2" fill="{{ fill_color | default: '#31b314' }}"/>
+        <path fill="#ffffff" d="M7.71468 2.40204C7.80448 2.12565 8.19551 2.12565 8.28531 2.40204L9.38664 5.79157C9.4268 5.91518 9.54198 5.99886 9.67195 5.99886H13.2359C13.5265 5.99886 13.6474 6.37075 13.4122 6.54157L10.5289 8.63641C10.4238 8.7128 10.3798 8.84822 10.42 8.97182L11.5213 12.3614C11.6111 12.6377 11.2947 12.8676 11.0596 12.6968L8.17633 10.6019C8.07118 10.5255 7.9288 10.5255 7.82366 10.6019L4.94035 12.6968C4.70524 12.8676 4.3889 12.6377 4.4787 12.3613L5.58003 8.97182C5.62019 8.84821 5.57619 8.7128 5.47104 8.63641L2.58774 6.54157C2.35263 6.37075 2.47346 5.99886 2.76408 5.99886H6.32804C6.458 5.99886 6.57319 5.91517 6.61335 5.79157L7.71468 2.40204Z"/>
+      </svg>
+
+    {%- when 'trustpilot-star-empty' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <rect width="16" height="16" rx="2" fill="{{ fill_color | default: '#31b314' }}" fill-opacity=".25"/>
+        <path fill="#ffffff" d="M7.71468 2.40204C7.80448 2.12565 8.19551 2.12565 8.28531 2.40204L9.38664 5.79157C9.4268 5.91518 9.54198 5.99886 9.67195 5.99886H13.2359C13.5265 5.99886 13.6474 6.37075 13.4122 6.54157L10.5289 8.63641C10.4238 8.7128 10.3798 8.84822 10.42 8.97182L11.5213 12.3614C11.6111 12.6377 11.2947 12.8676 11.0596 12.6968L8.17633 10.6019C8.07118 10.5255 7.9288 10.5255 7.82366 10.6019L4.94035 12.6968C4.70524 12.8676 4.3889 12.6377 4.4787 12.3613L5.58003 8.97182C5.62019 8.84821 5.57619 8.7128 5.47104 8.63641L2.58774 6.54157C2.35263 6.37075 2.47346 5.99886 2.76408 5.99886H6.32804C6.458 5.99886 6.57319 5.91517 6.61335 5.79157L7.71468 2.40204Z"/>
+      </svg>
+
     {%- when 'facet-delete' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 9 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 9 9">
         <path stroke="currentColor" d="m1 1 7 7m0-7L1 8"/>

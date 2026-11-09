@@ -1,18 +1,15 @@
 {%- if product != blank -%}
-  {%- comment -%}
-  Logik for phformula
-  {%- endcomment -%}
-  {% assign is_phformula = false %}
-  {% if product.tags contains 'phformula' %}
-    {% assign is_phformula = true %}
-  {% endif %}
-
-  {% assign customer_logged_in = false %}
-  {% if customer %}
-    {% assign customer_logged_in = true %}
-  {% endif %}
-
   {%- liquid
+    assign show_phformula_login = false
+
+    if product.tags contains 'phformula' and customer == nil
+      assign show_phformula_login = true
+      assign show_payment_button = false
+      assign phformula_modal_id = form_id | append: '-phformula-modal'
+      assign phformula_return_to = request.path | url_encode
+      assign phformula_login_url = routes.storefront_login_url | default: '/customer_authentication/login' | append: '?return_to=' | append: phformula_return_to
+    endif
+
     assign recipient_feature_active = false
 
     if product.gift_card? and show_gift_card_recipient
@@ -104,10 +101,8 @@
                   {%- render 'quantity-selector', variant: product.selected_or_first_available_variant, form: form_id -%}
                 {%- endif -%}
 
-                {%- if is_phformula and customer_logged_in == false -%}
-                  <button type="button" class="btn-phformula-login" style="background: {{ atc_button_background }}; color: {{ atc_button_text_color }}; width: 100%;">
-                    Log ind for at bestille pHformula
-                  </button>
+                {%- if show_phformula_login -%}
+                  {%- render 'button', content: 'Log ind for at bestille pHformula', type: 'button', aria_controls: phformula_modal_id, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
                 {%- else -%}
                   {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
                 {%- endif -%}
@@ -136,90 +131,24 @@
     {%- endform -%}
   </product-form>
 
-  <!-- pHformula pop-up -->
-  <div id="phformula-popup" class="phformula-popup" style="display: none;">
-    <div class="phformula-popup__content">
-      <p>pHformula må ikke sælges online. pHformula er kun for kunder hos Højholt Hudpleje.</p>
-      <div class="phformula-popup__buttons">
-        <a href="https://shopify.com/50552733878/account" class="btn btn-primary">Opret konto / Login</a>
-        <button type="button" class="btn btn-secondary" id="phformula-popup-close">Fortsæt uden at oprette konto</button>
+   {%- if show_phformula_login -%}
+    <x-modal id="{{ phformula_modal_id | escape }}" append-to-body class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+      <div class="v-stack gap-4">
+        <div class="prose text-center">
+          <p class="h5">pHformula er kun for kunder</p>
+          <p>pHformula må ikke sælges online og er kun for kunder hos Højholt Hudpleje. Log ind eller opret en konto for at bestille.</p>
+        </div>
+
+        <div class="v-stack gap-2">
+          {%- render 'button', content: 'Opret konto / Log ind', href: phformula_login_url, stretch: true -%}
+
+          <dialog-close-button class="block">
+            {%- render 'button', content: 'Fortsæt uden at oprette konto', type: 'button', style: 'outline', stretch: true -%}
+          </dialog-close-button>
+        </div>
       </div>
-    </div>
-  </div>
-
-  <style>
-  .phformula-popup {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-  }
-
-  .phformula-popup__content {
-    background: #fff;
-    padding: 2rem;
-    max-width: 400px;
-    width: 90%;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .phformula-popup__buttons {
-    margin-top: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .phformula-popup__buttons .btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: var(--button-border-radius, 6px);
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .btn-primary {
-    background-color: var(--color-button-primary-bg, #000);
-    color: var(--color-button-primary-text, #fff);
-  }
-
-  .btn-primary:hover {
-    background-color: #333;
-    color: #fff;
-  }
-
-  .btn-secondary {
-    background-color: #ddd;
-    color: #333;
-  }
-
-  .btn-secondary:hover {
-    background-color: #bbb;
-    color: #000;
-  }
-
-  .btn-phformula-login {
-    display: inline-block;
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center;
-    width: 100%;
-    border-radius: var(--button-border-radius, 6px);
-    border: none;
-    background-color: var(--color-button-primary-bg, #392B26);
-    color: var(--color-button-primary-text, #fff);
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-</style>
+    </x-modal>
+  {%- endif -%}
 
 
   <script>

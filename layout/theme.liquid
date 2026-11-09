@@ -2,11 +2,7 @@
 
 <html lang="{{ request.locale.iso_code }}" dir="{% render 'direction' %}">
   <head>
-    <!-- cookieinformation start -->
-    <script id="CookieConsent" 
-      src="https://policy.app.cookieinformation.com/uc.js" 
-      data-culture="DA" data-gcm-version="2.0" type="text/javascript"></script>
-      <!-- cookieinformation slut -->
+
 
       <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -108,6 +104,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <x-toast class="toast">
       {% comment %}Container for notification messages; DO NOT DELETE{% endcomment %}
     </x-toast>
+    
+       {%- section 'free-gift' -%}
+    {%- render 'free-gift' -%}
 
       <script src="https://partnertrackshopify.dk/js/register.js" async></script>
 
@@ -117,6 +116,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
 
-
+<script>
+(function () {
+  console.log('VIP tracker v2 aktiv');
+  var fired = false;
+  function fire(src){ if(fired) return; fired=true; console.log('VIP CompleteRegistration via', src); if(window.fbq) fbq('track','CompleteRegistration',{content_name:'10 aars jubilaeum VIP'}); }
+  function found(root){
+    if(!root) return false;
+    try{ if(/er nu tilmeldt/i.test(root.textContent||'')) return true; }catch(e){}
+    var els; try{ els = root.querySelectorAll('*'); }catch(e){ return false; }
+    for(var i=0;i<els.length;i++){ if(els[i].shadowRoot && found(els[i].shadowRoot)) return true; }
+    return false;
+  }
+  var n=0, t=setInterval(function(){
+    if(fired || ++n>2400){ if(fired) clearInterval(t); return; }
+    if(found(document)) fire('shadow');
+  },500);
+})();
+</script>
   </body>
 </html>
