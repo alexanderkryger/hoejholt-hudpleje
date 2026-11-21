@@ -12,6 +12,27 @@
   if section.settings.desktop_dropdown_menu_style == 'sidebar' and section.settings.desktop_layout == 'logo_center_navigation_inline'
     assign open_dropdown_menu_in_sidebar = true
   endif
+
+  # Header button: colors are taken from the selected color schemes' primary button colors (desktop and mobile separately)
+  assign header_button_scheme = section.settings.button_color_scheme
+  assign mobile_button_scheme = section.settings.mobile_button_color_scheme
+
+  if section.settings.button_style == 'outline'
+    assign header_button_background = nil
+    assign header_button_text_color = header_button_scheme.settings.primary_button_background
+    assign mobile_button_background = nil
+    assign mobile_button_text_color = mobile_button_scheme.settings.primary_button_background
+  else
+    assign header_button_background = header_button_scheme.settings.primary_button_background
+    assign header_button_text_color = header_button_scheme.settings.primary_button_text_color
+    assign mobile_button_background = mobile_button_scheme.settings.primary_button_background
+    assign mobile_button_text_color = mobile_button_scheme.settings.primary_button_text_color
+  endif
+
+  assign show_header_button = false
+  if section.settings.button_text != blank and section.settings.button_link != blank
+    assign show_header_button = true
+  endif
 -%}
 
 <style>
@@ -58,6 +79,15 @@
 
     .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
       top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
+    }
+
+    .shopify-section--countdown-condensed ~ #shopify-section-{{ section.id }} {
+      top: calc(var(--countdown-condensed-is-sticky, 0) * var(--countdown-condensed-height, 0px));
+    }
+
+    .shopify-section--announcement-bar ~ .shopify-section--countdown-condensed ~ #shopify-section-{{ section.id }},
+    .shopify-section--countdown-condensed ~ .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
+      top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px) + var(--countdown-condensed-is-sticky, 0) * var(--countdown-condensed-height, 0px));
     }
   {%- endif -%}
 
@@ -274,6 +304,20 @@
           </li>
         {%- endif -%}
 
+        {%- if show_header_button -%}
+          <li class="header__button-link md-max:hidden">
+            {%- render 'button',
+              content: section.settings.button_text,
+              href: section.settings.button_link,
+              external: section.settings.button_open_in_new_tab,
+              style: section.settings.button_style,
+              size: 'sm',
+              background: header_button_background,
+              text_color: header_button_text_color
+            -%}
+          </li>
+        {%- endif -%}
+
         {%- comment -%}Offer a hook for apps to integrate into the header to add their own icon, for instance{%- endcomment -%}
         {%- for block in section.blocks -%}
           {%- if block.type == '@app' -%}
@@ -344,9 +388,24 @@
 
     {%- assign primary_menu = section.settings.drawer_menu | default: section.settings.menu -%}
 
+    {%- capture mobile_button -%}
+      {%- if show_header_button and section.settings.show_button_on_mobile -%}
+        {%- render 'button',
+          content: section.settings.button_text,
+          href: section.settings.button_link,
+          external: section.settings.button_open_in_new_tab,
+          style: section.settings.button_style,
+          background: mobile_button_background,
+          text_color: mobile_button_text_color,
+          stretch: true
+        -%}
+      {%- endif -%}
+    {%- endcapture -%}
+
     {%- render 'main-menu-drawer', 
       primary_menu: primary_menu, 
       secondary_menu: section.settings.secondary_menu,
+      mobile_button: mobile_button,
       show_nested_menu_indicator: section.settings.drawer_show_nested_menu_indicator,
       show_country_selector: show_country_selector,
       show_country_name: section.settings.show_country_name,
@@ -546,6 +605,63 @@
       "id": "drawer_show_nested_menu_indicator",
       "label": "t:sections.header.drawer_show_nested_menu_indicator",
       "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:global.text.button_category"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "t:global.text.button_text"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:global.text.button_link"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_open_in_new_tab",
+      "label": "t:global.text.open_in_new_tab",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:global.text.button_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:global.text.button_style_options.solid"
+        },
+        {
+          "value": "outline",
+          "label": "t:global.text.button_style_options.outline"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "color_scheme",
+      "id": "button_color_scheme",
+      "label": "Desktop color scheme",
+      "info": "The button uses the primary button colors of the selected scheme.",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_on_mobile",
+      "label": "Show on mobile",
+      "info": "On mobile the button is shown in the menu drawer below the main menu.",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "mobile_button_color_scheme",
+      "label": "Mobile color scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.show_button_on_mobile }}"
     },
     {
       "type": "header",

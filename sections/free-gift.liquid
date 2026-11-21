@@ -14,27 +14,23 @@ target gift quantity is computed here as well, so the client side only has to en
 {%- endcomment -%}
 
 {%- liquid
-  assign gift_product = settings.gift_product
-  assign gift_variant = gift_product.selected_or_first_available_variant
-  assign gift_product_type = gift_product.type | downcase | strip
+  assign gift_rules_enabled = false
 
-  assign gift_enabled = false
-
-  if settings.gift_enabled and gift_product != blank and gift_product_type == 'gave'
-    assign gift_enabled = true
+  if settings.gift_enabled or settings.gift_threshold_enabled or settings.gift_choice_enabled
+    assign gift_rules_enabled = true
   endif
 -%}
 
-{%- if gift_enabled -%}
+{%- if gift_rules_enabled -%}
   {%- liquid
-    assign gift_available = false
-
-    if gift_variant != blank and gift_variant.available
-      assign gift_available = true
-    endif
+    assign choice_trigger_product_id = settings.gift_choice_trigger_product.id
+    assign choice_min_price = settings.gift_choice_min_price | times: 100
+    assign threshold_amount = settings.gift_threshold_amount | times: 100
 
     assign qualifying_count = 0
     assign qualifying_quantity = 0
+    assign eligible_total = 0
+    assign choice_quantity = 0
     assign gift_lines_json = ''
   -%}
 
@@ -48,39 +44,112 @@ target gift quantity is computed here as well, so the client side only has to en
 
       {%- capture gift_line_json -%}{"key":{{ line_item.key | json }},"variant_id":{{ line_item.variant_id }},"quantity":{{ line_item.quantity }}}{%- endcapture -%}
       {%- assign gift_lines_json = gift_lines_json | append: gift_line_json -%}
-        {%- elsif line_item.product.metafields.custom.free_gift.value or line_item.variant.metafields.custom.free_gift.value -%}
-      {%- assign qualifying_count = qualifying_count | plus: 1 -%}
-      {%- assign qualifying_quantity = qualifying_quantity | plus: line_item.quantity -%}
+    {%- else -%}
+      {%- liquid
+        if line_item.product.metafields.custom.free_gift.value or line_item.variant.metafields.custom.free_gift.value
+          assign qualifying_count = qualifying_count | plus: 1
+          assign qualifying_quantity = qualifying_quantity | plus: line_item.quantity
+        endif
+
+        if line_item.product_id == choice_trigger_product_id
+          if line_item.variant.price >= choice_min_price
+            assign choice_quantity = choice_quantity | plus: line_item.quantity
+          endif
+        elsif line_item.gift_card == false
+          comment
+            Gift cards (and the product triggering the gift choice) never count towards the cart value
+          endcomment
+          assign eligible_total = eligible_total | plus: line_item.final_line_price
+        endif
+      -%}
     {%- endif -%}
   {%- endfor -%}
 
   {%- liquid
-    assign target_quantity = 0
-
-    if gift_available
-      if settings.gift_quantity_mode == 'per_item'
-        assign target_quantity = qualifying_quantity
-      else
-        assign target_quantity = qualifying_count
-      endif
-
-      assign target_quantity = target_quantity | at_most: settings.gift_max_quantity
-
-      comment
-        Never ask for more units than Shopify would accept, otherwise the client would keep trying to reach a target
-        that can never be met.
-      endcomment
-
-      if gift_variant.inventory_management != blank and gift_variant.inventory_policy == 'deny'
-        assign target_quantity = target_quantity | at_most: gift_variant.inventory_quantity
-      endif
-
-      assign target_quantity = target_quantity | at_least: 0
-    endif
+    assign pool_ids = 'metafield,threshold,choice' | split: ','
+    assign pools_json = ''
   -%}
 
+  {%- for pool_id in pool_ids -%}
+    {%- liquid
+      assign pool_target = 0
+      assign pool_product_settings = ''
+
+      case pool_id
+        when 'metafield'
+          if settings.gift_enabled
+            assign pool_product_settings = 'gift_product'
+
+            if settings.gift_quantity_mode == 'per_item'
+              assign pool_target = qualifying_quantity
+            else
+              assign pool_target = qualifying_count
+            endif
+
+            assign pool_target = pool_target | at_most: settings.gift_max_quantity
+          endif
+
+        when 'threshold'
+          if settings.gift_threshold_enabled and threshold_amount > 0
+            assign pool_product_settings = 'gift_threshold_product'
+
+            if eligible_total >= threshold_amount
+              assign pool_target = 1
+            endif
+          endif
+
+        when 'choice'
+          if settings.gift_choice_enabled and choice_trigger_product_id != blank
+            assign pool_product_settings = 'gift_choice_product_1,gift_choice_product_2'
+            assign pool_target = choice_quantity
+          endif
+      endcase
+
+      assign pool_product_settings = pool_product_settings | split: ','
+      assign pool_variants_json = ''
+    -%}
+
+    {%- for product_setting in pool_product_settings -%}
+      {%- liquid
+        assign pool_product = settings[product_setting]
+        assign pool_product_type = pool_product.type | downcase | strip
+        assign pool_variant = pool_product.selected_or_first_available_variant
+
+        if pool_product == blank or pool_product_type != 'gave' or pool_variant == blank or pool_variant.available == false
+          continue
+        endif
+
+        comment
+          Never ask for more units than Shopify would accept, otherwise the client would keep trying to reach a target
+          that can never be met. A value of -1 means there is no limit.
+        endcomment
+        assign pool_variant_max = -1
+
+        if pool_variant.inventory_management != blank and pool_variant.inventory_policy == 'deny'
+          assign pool_variant_max = pool_variant.inventory_quantity | at_least: 0
+        endif
+
+        if pool_variants_json != ''
+          assign pool_variants_json = pool_variants_json | append: ','
+        endif
+      -%}
+
+      {%- capture pool_variant_json -%}{"id":{{ pool_variant.id }},"max":{{ pool_variant_max }}}{%- endcapture -%}
+      {%- assign pool_variants_json = pool_variants_json | append: pool_variant_json -%}
+    {%- endfor -%}
+
+    {%- if pool_variants_json != '' -%}
+      {%- if pools_json != '' -%}
+        {%- assign pools_json = pools_json | append: ',' -%}
+      {%- endif -%}
+
+      {%- capture pool_json -%}{"id":{{ pool_id | json }},"target_quantity":{{ pool_target | at_least: 0 }},"variants":[{{ pool_variants_json }}]}{%- endcapture -%}
+      {%- assign pools_json = pools_json | append: pool_json -%}
+    {%- endif -%}
+  {%- endfor -%}
+
   <free-gift hidden>
-    <script type="application/json" data-free-gift-state>{"gift_variant_id":{{ gift_variant.id | default: 0 }},"gift_available":{{ gift_available }},"qualifying_count":{{ qualifying_count }},"target_quantity":{{ target_quantity }},"gift_lines":[{{ gift_lines_json }}]}</script>
+    <script type="application/json" data-free-gift-state>{"pools":[{{ pools_json }}],"gift_lines":[{{ gift_lines_json }}]}</script>
   </free-gift>
 {%- endif -%}
 

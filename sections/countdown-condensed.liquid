@@ -1,4 +1,39 @@
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+{%- if section.settings.glass_effect -%}
+  <style>
+    :root {
+      --countdown-condensed-is-sticky: 1;
+    }
+
+    #shopify-section-{{ section.id }} {
+      position: sticky;
+      top: 0;
+    }
+
+    .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
+      top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
+    }
+
+    .shopify-section--header ~ #shopify-section-{{ section.id }} {
+      top: calc(var(--header-is-sticky, 0) * var(--header-is-visible, 0) * var(--header-height, 0px));
+    }
+
+    body {
+      background-image: linear-gradient(rgb({{ section.settings.color_scheme.settings.background.rgb }}), rgb({{ section.settings.color_scheme.settings.background.rgb }}));
+      background-repeat: no-repeat;
+      background-size: 100% var(--countdown-condensed-height, 0px);
+    }
+
+    body:has(.shopify-section--announcement-bar ~ #shopify-section-{{ section.id }}) {
+      background-position: 0 var(--announcement-bar-height, 0px);
+    }
+
+    body:has(.shopify-section--header ~ #shopify-section-{{ section.id }}) {
+      background-position: 0 var(--header-height, 0px);
+    }
+  </style>
+{%- endif -%}
+
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }} {% if section.settings.glass_effect %}color-scheme--glass{% endif %}">
   <height-observer variable="countdown-condensed">
     {%- assign accessibility_expiration_date = section.settings.expiration_date | date: format: 'date_at_time' -%}
     {%- assign accessibility_text = 'sections.countdown_timer.expires_accessibility_text' | t: expiration_date: accessibility_expiration_date -%}
@@ -81,6 +116,13 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "glass_effect",
+      "label": "t:sections.countdown_timer.glass_effect",
+      "info": "t:sections.countdown_timer.glass_effect_info",
+      "default": false
     },
     {
       "type": "inline_richtext",

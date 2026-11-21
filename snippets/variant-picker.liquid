@@ -97,6 +97,192 @@ Supported variables
           -%}
 
           <input class="sr-only" type="radio" id="{{ param_name }}-{{ single_option_value.id }}" form="{{ form_id }}" name="{{ param_name }}" data-option-position="{{ option.position }}" value="{{ single_option_value.id }}" checked>
+        {%- elsif resolved_option_selector_style == 'slider' -%}
+          {%- liquid
+            assign param_name = form_id | append: '-option' | append: option.position
+            assign slider_default_downcase = slider_default_value | downcase | strip
+            assign slider_message_lines = slider_messages | newline_to_br | split: '<br />'
+            assign slider_digits = '0123456789'
+
+            assign slider_amount_count = 0
+            assign slider_treatment_count = 0
+            assign slider_selected_index = nil
+            assign slider_default_index = nil
+            assign slider_first_amount = nil
+            assign slider_last_amount = nil
+
+            for option_value in option.values
+              assign option_value_first_char = option_value.name | strip | slice: 0
+
+              if slider_digits contains option_value_first_char
+                if slider_first_amount == nil
+                  assign slider_first_amount = option_value
+                endif
+
+                assign slider_last_amount = option_value
+
+                if option_value.selected
+                  assign slider_selected_index = slider_amount_count
+                endif
+
+                assign option_value_downcase = option_value.name | downcase | strip
+
+                if slider_default_downcase != blank and option_value_downcase == slider_default_downcase
+                  assign slider_default_index = slider_amount_count
+                endif
+
+                assign slider_amount_count = slider_amount_count | plus: 1
+              else
+                assign slider_treatment_count = slider_treatment_count | plus: 1
+              endif
+            endfor
+
+            if slider_selected_index == nil
+              assign slider_mode = 'treatment'
+              assign slider_index = slider_default_index | default: 0
+            else
+              assign slider_mode = 'amount'
+              assign slider_index = slider_selected_index
+            endif
+
+            assign slider_max = slider_amount_count | minus: 1
+
+            if slider_max > 0
+              assign slider_progress = slider_index | times: 100.0 | divided_by: slider_max
+            else
+              assign slider_progress = 100
+            endif
+
+            assign slider_current_id = nil
+            assign slider_current_message = ''
+            assign slider_amount_index = 0
+          -%}
+
+          <option-slider class="v-stack gap-4" {% if slider_default_index != nil %}default-index="{{ slider_default_index }}"{% endif %}>
+            {%- if slider_treatment_count > 0 -%}
+              <div class="h-stack gap-3 wrap">
+                <button type="button" class="block-swatch {% if block_selector_style == 'fill' %}block-swatch--fill{% endif %} {% if slider_mode == 'amount' %}is-selected{% endif %}" data-mode-button="amount" aria-pressed="{% if slider_mode == 'amount' %}true{% else %}false{% endif %}">
+                  {{- slider_amount_label | default: option.name | escape -}}
+                </button>
+
+                <button type="button" class="block-swatch {% if block_selector_style == 'fill' %}block-swatch--fill{% endif %} {% if slider_mode == 'treatment' %}is-selected{% endif %}" data-mode-button="treatment" aria-pressed="{% if slider_mode == 'treatment' %}true{% else %}false{% endif %}">
+                  {{- slider_treatment_label | default: 'Behandling' | escape -}}
+                </button>
+              </div>
+            {%- endif -%}
+
+            <div data-mode-panel="amount" {% if slider_mode != 'amount' %}hidden{% endif %}>
+              <div class="price-range">
+                <script type="application/json">
+                  [
+                    {%- for option_value in option.values -%}
+                      {%- liquid
+                        assign option_value_first_char = option_value.name | strip | slice: 0
+
+                        unless slider_digits contains option_value_first_char
+                          continue
+                        endunless
+
+                        assign option_value_amount = option_value.name | remove: '.' | remove: ' ' | plus: 0
+                        assign option_value_message = ''
+                        assign option_value_message_amount = -1
+
+                        for line in slider_message_lines
+                          assign line_parts = line | split: ':'
+                          assign line_amount = line_parts.first | strip | remove: '.' | plus: 0
+
+                          if line_parts.size > 1 and line_amount <= option_value_amount and line_amount > option_value_message_amount
+                            assign option_value_message_amount = line_amount
+                            assign option_value_message = line | remove_first: line_parts.first | remove_first: ':' | strip
+                          endif
+                        endfor
+
+                        if slider_amount_index == slider_index
+                          assign slider_current_id = option_value.id
+                          assign slider_current_message = option_value_message
+                        endif
+                      -%}
+
+                      {% unless slider_amount_index == 0 %},{% endunless %}{ "id": {{ option_value.id | json }}, "name": {{ option_value.name | json }}, "message": {{ option_value_message | json }} }
+
+                      {%- assign slider_amount_index = slider_amount_index | plus: 1 -%}
+                    {%- endfor -%}
+                  ]
+                </script>
+
+                <input class="sr-only" type="radio" tabindex="-1" aria-hidden="true" id="{{ param_name }}-value" form="{{ form_id }}" name="{{ param_name }}" data-option-position="{{ option.position }}" data-option-slider-value value="{{ slider_current_id }}" {% if slider_mode == 'amount' %}checked{% endif %}>
+
+                <div class="range-group" style="--range-min: 0%; --range-max: {{ slider_progress }}%">
+                  <input type="range" class="range" id="{{ param_name }}-slider" min="0" max="{{ slider_max }}" step="1" value="{{ slider_index }}" aria-label="{{ option.name | escape }}">
+                </div>
+
+                <div class="h-stack justify-between text-sm text-subdued">
+                  <span>{{ slider_first_amount.name }}</span>
+                  <span>{{ slider_last_amount.name }}</span>
+                </div>
+
+                <p class="text-sm" data-option-message {% if slider_current_message == blank %}hidden{% endif %}>{{ slider_current_message | escape }}</p>
+              </div>
+            </div>
+
+            {%- if slider_treatment_count > 0 -%}
+              {%- liquid
+                assign slider_treatment_placeholder = slider_treatment_label | default: 'Behandling' | downcase | prepend: 'Vælg '
+                assign slider_selected_treatment_label = nil
+              -%}
+
+              {%- capture slider_treatment_options -%}
+                {%- for option_value in option.values -%}
+                  {%- liquid
+                    assign option_value_first_char = option_value.name | strip | slice: 0
+
+                    if slider_digits contains option_value_first_char
+                      continue
+                    endif
+
+                    assign treatment_label = option_value.name
+
+                    if option_value.variant
+                      assign treatment_price = option_value.variant.price | money_without_trailing_zeros
+                      assign treatment_label = option_value.name | append: ' · ' | append: treatment_price
+                    endif
+
+                    if option_value.selected
+                      assign slider_selected_treatment_label = treatment_label
+                    endif
+                  -%}
+
+                  {%- if hide_sold_out_variants == false or option_value.available or option_value.selected -%}
+                    <label class="popover__value-option" for="{{ param_name }}-{{ option_value.id }}">
+                      <input class="sr-only" type="radio" id="{{ param_name }}-{{ option_value.id }}" form="{{ form_id }}" name="{{ param_name }}" data-option-position="{{ option.position }}" value="{{ option_value.id }}" {% if option_value.selected %}checked{% endif %}>
+                      <span {% if option_value.available == false %}class="line-through"{% endif %}>{{- treatment_label -}}</span>
+                    </label>
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endcapture -%}
+
+              <div data-mode-panel="treatment" {% if slider_mode != 'treatment' %}hidden{% endif %}>
+                <div class="relative">
+                  {%- capture popover_id -%}popover-variant-treatment-{{ section.id }}-{{ product.id }}-{{ option.position }}{%- endcapture -%}
+
+                  <button type="button" class="select {% if settings.input_uppercase %}subheading{% endif %}" aria-controls="{{ popover_id }}" aria-expanded="false">
+                    <span id="{{ popover_id }}-selected-value" data-treatment-selected-value>{{- slider_selected_treatment_label | default: slider_treatment_placeholder -}}</span>
+                    {%- render 'icon' with 'chevron-down' -%}
+                  </button>
+
+                  <x-popover id="{{ popover_id }}" class="popover popover--w-full color-scheme color-scheme--{{ settings.default_color_scheme.id }}" close-on-listbox-change>
+                    <p class="h6" slot="header">{{ slider_treatment_label | default: 'Behandling' | escape }}</p>
+
+                    <div class="popover__value-list">
+                      {{- slider_treatment_options -}}
+                    </div>
+                  </x-popover>
+                </div>
+              </div>
+            {%- endif -%}
+          </option-slider>
+
+          <script src="{{ 'option-slider.js' | asset_url }}" type="module"></script>
         {%- elsif resolved_option_selector_style == 'dropdown' -%}
           <div class="relative">
             {%- capture popover_id -%}popover-variant-dropdown-{{ section.id }}-{{ product.id }}-{{ option.position }}{%- endcapture -%}

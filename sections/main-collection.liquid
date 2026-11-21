@@ -4,6 +4,12 @@
   {%- assign show_filters = false -%}
 {%- endif -%}
 
+{%- if section.settings.enable_sticky_filter_button and show_filters -%}
+  {%- assign sticky_filter_button = true -%}
+{%- else -%}
+  {%- assign sticky_filter_button = false -%}
+{%- endif -%}
+
 <style>
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
@@ -20,6 +26,23 @@
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
   }
+
+  {%- if sticky_filter_button -%}
+    #shopify-section-{{ section.id }} .collection__floating-button--sticky {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: none;
+      position: sticky;
+      inset-inline: auto;
+      margin-block-start: 2rem;
+      padding-inline: 1rem;
+      transform: none;
+    }
+
+    #shopify-section-{{ section.id }} .collection__floating-button--sticky .button {
+      pointer-events: auto;
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
@@ -36,7 +59,7 @@
     </div>
   {%- else -%}
     <div id="collection" class="collection">
-      {%- render 'collection-toolbar' -%}
+      {%- render 'collection-toolbar', sticky_filter_button: sticky_filter_button -%}
 
       <div class="collection__inner">
         {%- paginate collection.products by section.settings.products_per_page -%}
@@ -69,10 +92,16 @@
           {%- endif -%}
         {%- endpaginate -%}
 
-        {%- if show_filters or section.settings.show_sort_by -%}
-          {%- render 'collection-facets-floating-button' -%}
+        {%- if sticky_filter_button == false -%}
+          {%- if show_filters or section.settings.show_sort_by -%}
+            {%- render 'collection-facets-floating-button' -%}
+          {%- endif -%}
         {%- endif -%}
       </div>
+
+      {%- if sticky_filter_button -%}
+        {%- render 'collection-facets-floating-button', sticky: true -%}
+      {%- endif -%}
     </div>
   {%- endif -%}
 </div>
@@ -157,6 +186,12 @@ on desktop based on the settings
     },
     {
       "type": "checkbox",
+      "id": "show_products_count",
+      "label": "t:sections.main_collection.show_products_count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
       "id": "show_product_card_size_selector",
       "label": "t:sections.main_collection.show_product_card_size_selector",
       "default": true
@@ -166,6 +201,29 @@ on desktop based on the settings
       "id": "quick_links_menu",
       "label": "t:sections.main_collection.quick_links",
       "info": "t:sections.main_collection.quick_links_info"
+    },
+    {
+      "type": "select",
+      "id": "quick_links_style",
+      "label": "t:sections.main_collection.quick_links_style",
+      "options": [
+        {
+          "value": "links",
+          "label": "t:sections.main_collection.quick_links_style_options.links"
+        },
+        {
+          "value": "dropdown",
+          "label": "t:sections.main_collection.quick_links_style_options.dropdown"
+        }
+      ],
+      "default": "links"
+    },
+    {
+      "type": "text",
+      "id": "quick_links_label",
+      "label": "t:sections.main_collection.quick_links_label",
+      "info": "t:sections.main_collection.quick_links_label_info",
+      "visible_if": "{{ section.settings.quick_links_style == 'dropdown' }}"
     },
     {
       "type": "header",
@@ -223,6 +281,19 @@ on desktop based on the settings
       "id": "open_filters_by_default",
       "label": "t:global.faceting.open_filters_by_default",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_filter_button",
+      "label": "Sticky filterknap",
+      "info": "Erstatter knappen i toolbaren med en knap, der følger med i bunden af skærmen på både mobil og desktop.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "hidden_filters",
+      "label": "Skjul filtre",
+      "info": "Kommasepareret liste med filternavne, præcis som de vises i webshoppen, f.eks. Brand, Kategori."
     },
     {
       "type": "select",

@@ -150,6 +150,12 @@ Supported variables
       -%}
     {%- endif -%}
 
+    {%- if settings.product_card_show_product_badge and product.metafields.custom.product_badge != blank -%}
+      <div class="product-card__custom-badge product-card__custom-badge--{{ settings.product_card_product_badge_position }} {% if settings.product_card_product_badge_glass %}product-card__custom-badge--glass{% endif %}" {% if settings.product_card_product_badge_glass %}style="--product-badge-background: {{ settings.product_card_product_badge_background.rgb }}; --product-badge-opacity: {{ settings.product_card_product_badge_opacity | divided_by: 100.0 }}"{% endif %}>
+        {{- product.metafields.custom.product_badge | image_url: width: 300 | image_tag: loading: 'lazy', sizes: '80px', widths: '80,120,160,240,300', alt: '' -}}
+      </div>
+    {%- endif -%}
+
     <a href="{{ product.url }}" class="product-card__media" data-instant>
       {%- if product.media.size > 0 -%}
         {%- liquid

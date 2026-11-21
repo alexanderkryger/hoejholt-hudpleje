@@ -241,6 +241,80 @@
       "step": 0.5,
       "label": "t:sections.main_product.image_zoom_max_level",
       "default": 3
+    },
+    {
+      "type": "header",
+      "content": "Option-overlay på billede",
+      "info": "Viser den valgte option-værdi som tekst oven på et produktbillede, f.eks. beløbet på et gavekort."
+    },
+    {
+      "type": "text",
+      "id": "option_overlay_name",
+      "label": "Option-navn",
+      "info": "F.eks. Beløb. Lad feltet stå tomt for at slå overlay fra."
+    },
+    {
+      "type": "range",
+      "id": "option_overlay_media_position",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "label": "Billede nr.",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "option_overlay_x",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "X-position (fra venstre)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "option_overlay_y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Y-position (fra toppen)",
+      "info": "Tekstens underkant placeres på denne linje.",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "option_overlay_size",
+      "min": 1,
+      "max": 10,
+      "step": 0.1,
+      "unit": "%",
+      "label": "Tekststørrelse (af billedbredden)",
+      "default": 2.8
+    },
+    {
+      "type": "range",
+      "id": "option_overlay_max_width",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Maks. tekstbredde (af billedbredden)",
+      "info": "Længere tekst skaleres ned, så den passer på linjen.",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "option_overlay_color",
+      "label": "Tekstfarve",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "font_picker",
+      "id": "option_overlay_font",
+      "label": "Skrifttype",
+      "default": "caveat_n4"
     }
   ],
   "blocks": [
@@ -483,9 +557,42 @@
             {
               "value": "dropdown",
               "label": "t:sections.main_product.blocks.variant_picker.selector_style_options.dropdown"
+            },
+            {
+              "value": "slider",
+              "label": "Slider"
             }
           ],
           "default": "block"
+        },
+        {
+          "type": "text",
+          "id": "slider_default_value",
+          "label": "Slider: standardværdi",
+          "info": "Skriv option-værdien præcis som på produktet, f.eks. 500 kr. Bruges når kunden lander på produktet uden en valgt variant.",
+          "visible_if": "{{ block.settings.selector_style == 'slider' }}"
+        },
+        {
+          "type": "text",
+          "id": "slider_amount_label",
+          "label": "Slider: fane for beløb",
+          "default": "Beløb",
+          "visible_if": "{{ block.settings.selector_style == 'slider' }}"
+        },
+        {
+          "type": "text",
+          "id": "slider_treatment_label",
+          "label": "Slider: fane for øvrige værdier",
+          "info": "Option-værdier der ikke starter med et tal, vises som knapper under denne fane. Fanerne vises kun, hvis der findes sådanne værdier.",
+          "default": "Behandling",
+          "visible_if": "{{ block.settings.selector_style == 'slider' }}"
+        },
+        {
+          "type": "textarea",
+          "id": "slider_messages",
+          "label": "Slider: tekster ved beløb",
+          "info": "Én pr. linje i formatet beløb: tekst, f.eks. 650: Rækker til en simpel ansigtsbehandling. Teksten vises fra det beløb og op til næste linje.",
+          "visible_if": "{{ block.settings.selector_style == 'slider' }}"
         },
         {
           "type": "select",
@@ -1835,6 +1942,105 @@
       ]
     },
     {
+      "type": "launch_countdown",
+      "name": "t:sections.main_product.blocks.launch_countdown.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_product.blocks.launch_countdown.instructions"
+        },
+        {
+          "type": "text",
+          "id": "metafield",
+          "label": "t:sections.main_product.blocks.launch_countdown.metafield",
+          "info": "t:sections.main_product.blocks.launch_countdown.metafield_info",
+          "default": "custom.countdown"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:global.text.text",
+          "default": "Til salg om"
+        },
+        {
+          "type": "color",
+          "id": "background",
+          "label": "t:global.colors.background",
+          "default": "#75525d"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "t:global.colors.text",
+          "default": "#ffffff"
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_buy_buttons",
+          "label": "t:sections.main_product.blocks.launch_countdown.hide_buy_buttons",
+          "info": "t:sections.main_product.blocks.launch_countdown.hide_buy_buttons_info",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "t:sections.main_product.blocks.launch_countdown.form_category"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "t:global.text.button_text",
+          "default": "Få besked som den første"
+        },
+        {
+          "type": "select",
+          "id": "form_type",
+          "label": "t:sections.main_product.blocks.launch_countdown.form_type",
+          "info": "t:sections.main_product.blocks.launch_countdown.form_type_info",
+          "options": [
+            {
+              "value": "newsletter",
+              "label": "t:sections.main_product.blocks.launch_countdown.form_type_options.newsletter"
+            },
+            {
+              "value": "app_block",
+              "label": "t:sections.main_product.blocks.launch_countdown.form_type_options.app_block"
+            }
+          ],
+          "default": "newsletter"
+        },
+        {
+          "type": "text",
+          "id": "modal_title",
+          "label": "t:sections.main_product.blocks.modal.modal_title",
+          "default": "Få besked som den første",
+          "visible_if": "{{ block.settings.form_type == 'newsletter' }}"
+        },
+        {
+          "type": "richtext",
+          "id": "modal_content",
+          "label": "t:sections.main_product.blocks.modal.modal_content",
+          "default": "<p>Skriv din e-mail, så giver vi besked, så snart produktet kan købes.</p>",
+          "visible_if": "{{ block.settings.form_type == 'newsletter' }}"
+        },
+        {
+          "type": "text",
+          "id": "submit_text",
+          "label": "t:sections.main_product.blocks.launch_countdown.submit_text",
+          "default": "Tilmeld",
+          "visible_if": "{{ block.settings.form_type == 'newsletter' }}"
+        },
+        {
+          "type": "text",
+          "id": "customer_tags",
+          "label": "t:sections.main_product.blocks.launch_countdown.customer_tags",
+          "info": "t:sections.main_product.blocks.launch_countdown.customer_tags_info",
+          "default": "newsletter, notify-[handle]",
+          "visible_if": "{{ block.settings.form_type == 'newsletter' }}"
+        }
+      ]
+    },
+    {
       "type": "icons_with_text",
       "name": "t:sections.main_product.blocks.icons_with_text.name",
       "settings": [
@@ -2020,6 +2226,85 @@
             }
           ],
           "default": "h6"
+        }
+      ]
+    },
+    {
+      "type": "campaign_banner",
+      "name": "t:sections.main_product.blocks.campaign_banner.name",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_product.blocks.campaign_banner.instructions"
+        },
+        {
+          "type": "text",
+          "id": "metafield",
+          "label": "t:sections.main_product.blocks.campaign_banner.metafield",
+          "info": "t:sections.main_product.blocks.campaign_banner.metafield_info",
+          "default": "custom.trapperabat"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-4"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "t:global.text.heading",
+          "default": "Black Week"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "t:global.text.heading_size",
+          "options": [
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            },
+            {
+              "value": "text-sm",
+              "label": "Body text"
+            }
+          ],
+          "default": "h5"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:global.text.text",
+          "default": "Spar op til 25 % med trapperabat + gratis gave."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "label": "t:global.image.width",
+          "min": 40,
+          "max": 120,
+          "step": 4,
+          "unit": "px",
+          "default": 64
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:global.text.link"
         }
       ]
     },

@@ -14,12 +14,15 @@ Concurrency:
     react to its own mutations
 {%- endcomment -%}
 
-{%- if settings.gift_enabled and settings.gift_product != blank -%}
+{%- if settings.gift_enabled or settings.gift_threshold_enabled or settings.gift_choice_enabled -%}
   <script type="module">
     import { extractSectionId } from 'theme';
 
     const MAX_SYNC_PASSES = 3;
     const RELOAD_GUARD_KEY = 'free-gift:reload-count';
+    const CELEBRATION_ENABLED = {{ settings.gift_celebration_enabled | json }};
+    const CELEBRATION_TEXT = {{ settings.gift_celebration_text | json }};
+    const CELEBRATION_COLORS = ['#f6a429', '#3a2d28', '#a38274', '#f9efe6', '#ffffff'];
 
     export class FreeGift extends HTMLElement {
       #sectionId;
@@ -34,6 +37,7 @@ Concurrency:
         document.addEventListener('cart:prepare-bundled-sections', this.#onBundleSection.bind(this), {signal: this.#abortController.signal});
         document.addEventListener('cart:change', this.#onCartChange.bind(this), {signal: this.#abortController.signal});
         document.addEventListener('cart:refresh', this.#onCartRefresh.bind(this), {signal: this.#abortController.signal});
+        document.addEventListener('click', this.#onSwapClick.bind(this), {signal: this.#abortController.signal});
 
         // Reconcile on load, based on the server-rendered state. This also covers the cart page, where the theme
         // reloads the page instead of dispatching "cart:change".
@@ -153,7 +157,12 @@ Concurrency:
               return;
             }
 
+            const previousGiftQuantity = this.#countGifts(state);
             state = this.#parseState(cart['sections']?.[this.#sectionId]);
+
+            if (this.#countGifts(state) > previousGiftQuantity) {
+              this.#celebrate();
+            }
           }
         } finally {
           this.#isSyncing = false;
@@ -162,33 +171,60 @@ Concurrency:
 
       /**
        * Returns the single operation needed to bring the cart in line with the state, or null when nothing to do.
-       * All gifts are kept on one consolidated line, whose quantity must match the target computed in Liquid.
+       * Each pool owns the gift lines matching its variants, and the sum of those lines must match the pool target
+       * computed in Liquid. Gift lines that do not belong to any pool are removed.
        */
       #resolveOperation(state) {
         const giftLines = state.gift_lines || [],
-              targetQuantity = state.gift_available ? (state.target_quantity || 0) : 0,
+              claimedKeys = new Set(),
               updates = {};
 
-        if (!state.gift_variant_id || targetQuantity < 1) {
-          giftLines.forEach((line) => updates[line.key] = 0);
-          return Object.keys(updates).length > 0 ? {type: 'update', updates} : null;
-        }
+        (state.pools || []).forEach((pool) => {
+          const variantIds = pool.variants.map((variant) => variant.id),
+                poolLines = giftLines.filter((line) => variantIds.includes(line.variant_id)),
+                currentQuantity = poolLines.reduce((total, line) => total + line.quantity, 0),
+                targetQuantity = Math.max(pool.target_quantity || 0, 0);
 
-        const matchingLines = giftLines.filter((line) => line.variant_id === state.gift_variant_id);
+          poolLines.forEach((line) => claimedKeys.add(line.key));
 
-        // Any gift line pointing to another product, plus every duplicate line, is removed
-        giftLines.filter((line) => line.variant_id !== state.gift_variant_id).forEach((line) => updates[line.key] = 0);
-        matchingLines.slice(1).forEach((line) => updates[line.key] = 0);
+          if (currentQuantity > targetQuantity) {
+            // We remove the excess starting from the last line, so the gift picked first by the customer is kept
+            let excess = currentQuantity - targetQuantity;
 
-        if (matchingLines.length > 0 && matchingLines[0].quantity !== targetQuantity) {
-          updates[matchingLines[0].key] = targetQuantity;
-        }
+            [...poolLines].reverse().forEach((line) => {
+              const removed = Math.min(line.quantity, excess);
 
-        if (Object.keys(updates).length > 0) {
-          return {type: 'update', updates};
-        }
+              if (removed > 0) {
+                updates[line.key] = line.quantity - removed;
+                excess -= removed;
+              }
+            });
+          } else if (currentQuantity < targetQuantity) {
+            // We add the missing units to the first variant that still has room (the first variant is the default gift)
+            let missing = targetQuantity - currentQuantity;
 
-        return matchingLines.length === 0 ? {type: 'add', variantId: state.gift_variant_id, quantity: targetQuantity} : null;
+            pool.variants.forEach((variant) => {
+              const variantLines = poolLines.filter((line) => line.variant_id === variant.id),
+                    variantQuantity = variantLines.reduce((total, line) => total + line.quantity, 0),
+                    room = variant.max < 0 ? missing : Math.max(variant.max - variantQuantity, 0),
+                    added = Math.min(missing, room);
+
+              if (added > 0) {
+                if (variantLines.length > 0) {
+                  updates[variantLines[0].key] = variantLines[0].quantity + added;
+                } else {
+                  updates[variant.id] = added; // cart/update.js adds the variant when it is not in the cart yet
+                }
+
+                missing -= added;
+              }
+            });
+          }
+        });
+
+        giftLines.filter((line) => !claimedKeys.has(line.key)).forEach((line) => updates[line.key] = 0);
+
+        return Object.keys(updates).length > 0 ? {updates} : null;
       }
 
       async #applyOperation(operation) {
@@ -197,40 +233,86 @@ Concurrency:
         sectionsToBundle.add(this.#sectionId);
         document.documentElement.dispatchEvent(new CustomEvent('cart:prepare-bundled-sections', {bubbles: true, detail: {sections: sectionsToBundle}}));
 
-        const sections = [...sectionsToBundle].join(','),
-              endpoint = operation.type === 'add' ? 'cart/add.js' : 'cart/update.js',
-                           body = operation.type === 'add'
-                ? {items: [{id: operation.variantId, quantity: operation.quantity}], sections}
-                : {updates: operation.updates, sections};
-
         try {
-          const response = await fetch(`${Shopify.routes.root}${endpoint}`, {
+          const response = await fetch(`${Shopify.routes.root}cart/update.js`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-Requested-With': 'XMLHttpRequest' // Needed for Shopify to check inventory
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify({updates: operation.updates, sections: [...sectionsToBundle].join(',')})
           });
 
-          if (!response.ok) {
-            return null;
-          }
-
-          const responseJson = await response.json();
-
-          if (operation.type !== 'add') {
-            return responseJson; // cart/update.js returns the whole cart
-          }
-
-          // cart/add.js only returns the added items, so we fetch the cart and re-attach the sections
-          const cartContent = await (await fetch(`${Shopify.routes.root}cart.js`)).json();
-          cartContent['sections'] = responseJson['sections'];
-
-          return cartContent;
+          return response.ok ? await response.json() : null; // cart/update.js returns the whole cart
         } catch (error) {
           return null;
         }
+      }
+
+      /**
+       * ---------------------------------------------------------------------------------------------------------------
+       * GIFT CHOICE
+       * ---------------------------------------------------------------------------------------------------------------
+       */
+
+      async #onSwapClick(event) {
+        const button = event.target.closest?.('[data-free-gift-swap]');
+
+        if (!button) {
+          return;
+        }
+
+        event.preventDefault();
+
+        if (this.#isSyncing) {
+          return;
+        }
+
+        const state = this.#readState(this),
+              line = (state?.gift_lines || []).find((giftLine) => giftLine.key === button.getAttribute('data-line-key')),
+              targetVariantId = parseInt(button.getAttribute('data-variant-id'), 10),
+              pool = (state?.pools || []).find((pool) => pool.variants.some((variant) => variant.id === targetVariantId));
+
+        // The swap is only allowed between two gifts of the same pool
+        if (!line || !pool || line.variant_id === targetVariantId || !pool.variants.some((variant) => variant.id === line.variant_id)) {
+          return;
+        }
+
+        const targetLine = state.gift_lines.find((giftLine) => giftLine.variant_id === targetVariantId),
+              updates = {[line.key]: line.quantity - 1};
+
+        if (targetLine) {
+          updates[targetLine.key] = targetLine.quantity + 1;
+        } else {
+          updates[targetVariantId] = 1;
+        }
+
+        this.#isSyncing = true;
+        button.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+
+        let cart = null;
+
+        try {
+          cart = await this.#applyOperation({updates});
+        } finally {
+          this.#isSyncing = false;
+        }
+
+        if (!cart) {
+          button.removeAttribute('aria-busy');
+          button.disabled = false;
+          return;
+        }
+
+        this.#notify(cart);
+
+        if (this.#reloadCartPage()) {
+          return;
+        }
+
+        // The pool total is unchanged, but we still run a pass so that any change that arrived meanwhile is handled
+        this.#sync(this.#parseState(cart['sections']?.[this.#sectionId]));
       }
 
       /**
@@ -289,6 +371,113 @@ Concurrency:
         } catch (error) {
           // Safari in private mode does not allow access, we silently fail
         }
+      }
+
+      /**
+       * ---------------------------------------------------------------------------------------------------------------
+       * CELEBRATION
+       * ---------------------------------------------------------------------------------------------------------------
+       *
+       * Shown when the reconciliation has added a gift. Everything is created on demand and removed afterwards, so
+       * nothing is loaded or rendered until a gift is actually added.
+       */
+
+      #countGifts(state) {
+        return (state?.gift_lines || []).reduce((total, line) => total + line.quantity, 0);
+      }
+
+      #celebrate() {
+        if (!CELEBRATION_ENABLED || document.querySelector('[data-free-gift-celebration]')) {
+          return;
+        }
+
+        const duration = 3000,
+              overlay = document.createElement('div'),
+              message = document.createElement('p');
+
+        overlay.setAttribute('data-free-gift-celebration', '');
+        overlay.setAttribute('role', 'status');
+        overlay.style.cssText = 'position: fixed; inset: 0; z-index: 99999999; display: grid; place-items: center; padding: 1.5rem; pointer-events: none;';
+
+        message.className = 'h1 text-center color-scheme color-scheme--{{ settings.default_color_scheme.id }}';
+        message.style.cssText = 'position: relative; max-width: 40rem; padding: 1.5rem 2rem; border-radius: 1.5rem; box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.2);';
+        message.textContent = CELEBRATION_TEXT;
+
+        overlay.append(message);
+        document.body.append(overlay);
+
+        message.animate([
+          {opacity: 0, transform: 'scale(0.8)'},
+          {opacity: 1, transform: 'scale(1)', offset: 0.1},
+          {opacity: 1, transform: 'scale(1)', offset: 0.85},
+          {opacity: 0, transform: 'scale(1)'}
+        ], {duration, easing: 'ease-out', fill: 'forwards'});
+
+        setTimeout(() => overlay.remove(), duration);
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          return; // The message is enough, we do not animate confetti
+        }
+
+        const canvas = document.createElement('canvas'),
+              context = canvas.getContext('2d'),
+              ratio = Math.min(window.devicePixelRatio || 1, 2),
+              width = window.innerWidth,
+              height = window.innerHeight;
+
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.cssText = 'position: absolute; inset: 0; width: 100%; height: 100%;';
+        context.scale(ratio, ratio);
+        overlay.prepend(canvas);
+
+        const particles = Array.from({length: 120}, () => {
+          const angle = Math.random() * Math.PI * 2,
+                speed = 6 + Math.random() * 10;
+
+          return {
+            x: width / 2,
+            y: height / 2,
+            velocityX: Math.cos(angle) * speed,
+            velocityY: Math.sin(angle) * speed - 6,
+            size: 6 + Math.random() * 6,
+            rotation: Math.random() * Math.PI,
+            spin: (Math.random() - 0.5) * 0.4,
+            color: CELEBRATION_COLORS[Math.floor(Math.random() * CELEBRATION_COLORS.length)]
+          };
+        });
+
+        const startTime = performance.now();
+
+        const draw = (now) => {
+          const progress = (now - startTime) / duration;
+
+          if (progress >= 1 || !overlay.isConnected) {
+            return;
+          }
+
+          context.clearRect(0, 0, width, height);
+          context.globalAlpha = Math.min(1, (1 - progress) * 2);
+
+          particles.forEach((particle) => {
+            particle.velocityY += 0.35; // Gravity
+            particle.velocityX *= 0.99;
+            particle.x += particle.velocityX;
+            particle.y += particle.velocityY;
+            particle.rotation += particle.spin;
+
+            context.save();
+            context.translate(particle.x, particle.y);
+            context.rotate(particle.rotation);
+            context.fillStyle = particle.color;
+            context.fillRect(-particle.size / 2, -particle.size / 4, particle.size, particle.size / 2);
+            context.restore();
+          });
+
+          requestAnimationFrame(draw);
+        };
+
+        requestAnimationFrame(draw);
       }
     }
 

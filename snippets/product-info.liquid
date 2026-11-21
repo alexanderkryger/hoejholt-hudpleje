@@ -37,6 +37,29 @@ Supported variables
       else
         assign filtered_blocks = section.blocks
       endif
+
+      assign launch_countdown_active = false
+      assign launch_hide_buy_buttons = false
+      assign launch_app_block_id = ''
+
+      for launch_block in section.blocks
+        if launch_block.type == 'launch_countdown' and launch_block.settings.metafield != blank
+          assign metafield_parts = launch_block.settings.metafield | split: '.'
+          assign metafield_namespace = metafield_parts | first
+          assign metafield_key = metafield_parts | last
+          assign launch_date = product.metafields[metafield_namespace][metafield_key].value
+
+          if launch_date != blank
+            assign launch_timestamp = launch_date | date: '%s' | plus: 0
+            assign now_timestamp = 'now' | date: '%s' | plus: 0
+
+            if launch_timestamp > now_timestamp
+              assign launch_countdown_active = true
+              assign launch_hide_buy_buttons = launch_block.settings.hide_buy_buttons
+            endif
+          endif
+        endif
+      endfor
     -%}
 
     {%- for block in filtered_blocks -%}
@@ -85,7 +108,15 @@ Supported variables
       {%- capture block_content -%}
         {%- case block.type -%}
           {%- when '@app' -%}
-            {%- render block -%}
+            {%- if block.id == launch_app_block_id -%}
+              {%- if launch_countdown_active -%}
+                <x-modal id="{{ launch_modal_id | escape }}" append-to-body class="modal modal--sm color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+                  {%- render block -%}
+                </x-modal>
+              {%- endif -%}
+            {%- else -%}
+              {%- render block -%}
+            {%- endif -%}
 
           {%- when 'vendor' -%}
             {%- if product != blank -%}
@@ -243,6 +274,10 @@ Supported variables
                   hide_single_value_options: block.settings.hide_single_value_options,
                   separate_options: block.settings.separate_options,
                   selector_style: block.settings.selector_style,
+                                    slider_default_value: block.settings.slider_default_value,
+                                    slider_messages: block.settings.slider_messages,
+                  slider_amount_label: block.settings.slider_amount_label,
+                  slider_treatment_label: block.settings.slider_treatment_label,
                   swatch_selector_style: block.settings.swatch_selector_style,
                   swatch_selector_size: block.settings.swatch_selector_size,
                   block_selector_style: block.settings.block_selector_style,
@@ -530,6 +565,49 @@ Supported variables
               </div>
             {%- endif -%}
 
+          {%- when 'campaign_banner' -%}
+            {%- liquid
+              assign show_campaign_banner = true
+
+              if block.settings.metafield != blank
+                assign metafield_parts = block.settings.metafield | split: '.'
+                assign metafield_namespace = metafield_parts | first
+                assign metafield_key = metafield_parts | last
+
+                if product.metafields[metafield_namespace][metafield_key].value != true
+                  assign show_campaign_banner = false
+                endif
+              endif
+            -%}
+
+            {%- if show_campaign_banner -%}
+              {%- capture image_style -%}--image-max-width: {{ block.settings.image_width }}px{%- endcapture -%}
+
+              <div class="campaign-banner offer-item relative color-scheme color-scheme--{{ block.settings.color_scheme.id }} text-start">
+                <div class="h-stack gap-4 align-center justify-between">
+                  <div class="v-stack gap-1">
+                    {%- if block.settings.heading != blank -%}
+                      <p class="{{ block.settings.heading_size }}">{{ block.settings.heading }}</p>
+                    {%- endif -%}
+
+                    {%- if block.settings.text != blank -%}
+                      <p class="text-sm">{{ block.settings.text }}</p>
+                    {%- endif -%}
+                  </div>
+
+                  {%- if block.settings.image != blank -%}
+                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '120px', widths: '64,128,192,240,360', class: 'constrained-image', style: image_style -}}
+                  {%- endif -%}
+                </div>
+
+                {%- if block.settings.link != blank -%}
+                  <a href="{{ block.settings.link }}" class="campaign-banner__link">
+                    <span class="sr-only">{{ block.settings.heading | default: block.settings.text | strip_html }}</span>
+                  </a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
           {%- when 'authorized_reseller' -%}
             {%- if product.vendor != blank and block.settings.text != blank -%}
               {%- liquid
@@ -595,6 +673,128 @@ Supported variables
                 </div>
               </countdown-timer>
             </div>
+
+          {%- when 'launch_countdown' -%}
+            {%- liquid
+              assign launch_app_block_id = ''
+              assign launch_modal_id = product_form_id | append: block.id
+              assign launch_has_modal = false
+
+              if block.settings.form_type == 'newsletter'
+                assign launch_has_modal = true
+              elsif next_block.type == '@app'
+                assign launch_app_block_id = next_block.id
+                assign launch_has_modal = true
+              endif
+            -%}
+
+            {%- if launch_countdown_active -%}
+              {%- liquid
+                assign launch_form_id = 'launch-form-' | append: launch_modal_id
+                assign launch_posted_successfully = false
+                assign launch_form_has_errors = false
+
+                if block.settings.form_type == 'newsletter'
+                  capture _temporary
+                    form 'customer', id: launch_form_id, class: 'form'
+                      assign launch_posted_successfully = form.posted_successfully?
+
+                      if form.errors
+                        assign launch_form_has_errors = true
+                      endif
+                    endform
+                  endcapture
+                endif
+
+                assign launch_expiration_date = launch_date | date: format: 'date_at_time'
+                assign launch_accessibility_text = 'sections.countdown_timer.expires_accessibility_text' | t: expiration_date: launch_expiration_date
+              -%}
+
+              <launch-countdown class="product-countdown" expires-at="{{ launch_date | date: '%FT%T%:z' | escape }}" style="{% render 'surface', background: block.settings.background, text_color: block.settings.text_color %}">
+                <div class="v-stack gap-2 justify-items-start">
+                  {%- if block.settings.text != blank -%}
+                    <p class="product-countdown__text text-start">{{ block.settings.text }}</p>
+                  {%- endif -%}
+
+                  {%- if launch_posted_successfully -%}
+                    <p class="text-sm text-start">{{ 'general.newsletter.subscribed_successfully' | t }}</p>
+                  {%- elsif launch_has_modal and block.settings.button_text != blank -%}
+                    {%- render 'button', content: block.settings.button_text, style: 'link', aria_controls: launch_modal_id -%}
+                  {%- endif -%}
+                </div>
+
+                <countdown-timer
+                  class="countdown-condensed__timer"
+                  role="timer"
+                  expires-at="{{ launch_date | date: '%FT%T%:z' | escape }}"
+                  expiration-behavior="hide"
+                  aria-label="{{ launch_accessibility_text | escape }}"
+                >
+                  <div class="countdown-condensed__timer-item" aria-hidden="true">
+                    <countdown-timer-flip type="days" class="subheading bold">00</countdown-timer-flip>
+                    <span class="countdown-condensed__unit subheading subheading-xs">{{ 'sections.countdown_timer.days' | t }}</span>
+                  </div>
+
+                  <span class="subheading subheading-xs" aria-hidden="true">:</span>
+
+                  <div class="countdown-condensed__timer-item" aria-hidden="true">
+                    <countdown-timer-flip type="hours" class="subheading bold">00</countdown-timer-flip>
+                    <span class="countdown-condensed__unit subheading subheading-xs">{{ 'sections.countdown_timer.hours' | t }}</span>
+                  </div>
+
+                  <span class="subheading subheading-xs" aria-hidden="true">:</span>
+
+                  <div class="countdown-condensed__timer-item" aria-hidden="true">
+                    <countdown-timer-flip type="minutes" class="subheading bold">00</countdown-timer-flip>
+                    <span class="countdown-condensed__unit subheading subheading-xs">{{ 'sections.countdown_timer.minutes' | t }}</span>
+                  </div>
+
+                  <span class="subheading subheading-xs" aria-hidden="true">:</span>
+
+                  <div class="countdown-condensed__timer-item" aria-hidden="true">
+                    <countdown-timer-flip type="seconds" class="subheading bold">00</countdown-timer-flip>
+                    <span class="countdown-condensed__unit subheading subheading-xs">{{ 'sections.countdown_timer.seconds' | t }}</span>
+                  </div>
+                </countdown-timer>
+              </launch-countdown>
+
+              {%- if block.settings.form_type == 'newsletter' and launch_posted_successfully == false -%}
+                <x-modal id="{{ launch_modal_id | escape }}" append-to-body {% if launch_form_has_errors %}open{% endif %} class="modal modal--sm color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+                  <div class="v-stack gap-6">
+                    {%- if block.settings.modal_title != blank or block.settings.modal_content != blank -%}
+                      <div class="prose">
+                        {%- if block.settings.modal_title != blank -%}
+                          <p class="h5">{{ block.settings.modal_title }}</p>
+                        {%- endif -%}
+
+                        {{- block.settings.modal_content -}}
+                      </div>
+                    {%- endif -%}
+
+                    {%- form 'customer', id: launch_form_id, class: 'form' -%}
+                      {%- if form.errors -%}
+                        {%- capture error_message -%}{{ form.errors.translated_fields['email'] }} {{ form.errors.messages['email'] }}{%- endcapture -%}
+                        {%- render 'banner', content: error_message, status: 'error' -%}
+                      {%- endif -%}
+
+                      <input type="hidden" name="contact[tags]" value="{{ block.settings.customer_tags | replace: '[handle]', product.handle | escape }}">
+
+                      <div class="input-with-connected-submit">
+                        {%- liquid
+                          assign input_label = 'general.newsletter.email' | t
+                          render 'input', name: 'contact[email]', label: input_label, type: 'email', required: true, autocomplete: 'email', enterkeyhint: 'send'
+
+                          assign button_default_content = 'general.newsletter.subscribe' | t
+                          assign button_content = block.settings.submit_text | default: button_default_content
+
+                          render 'button', type: 'submit', content: button_content, icon: 'arrow-right'
+                        -%}
+                      </div>
+                    {%- endform -%}
+                  </div>
+                </x-modal>
+              {%- endif -%}
+            {%- endif -%}
 
           {%- when 'icons_with_text' -%}
             {%- capture icons -%}
@@ -727,7 +927,7 @@ Supported variables
         endif
       -%}
 
-      <div class="product-info__block-item" data-block-id="{{ block.id }}" data-block-type="{{ block.type | replace: '_', '-' }}" {% if allow_partial_rerender %}data-block-allow-rerender{% endif %} {% unless block.type == '@app' or block.type == 'accordion' %}{{ block.shopify_attributes }}{% endunless %}>
+      <div class="product-info__block-item" data-block-id="{{ block.id }}" data-block-type="{{ block.type | replace: '_', '-' }}" {% if allow_partial_rerender %}data-block-allow-rerender{% endif %} {% if launch_hide_buy_buttons and block.type contains 'buy_buttons' %}hidden{% endif %} {% unless block.type == '@app' or block.type == 'accordion' %}{{ block.shopify_attributes }}{% endunless %}>
         {{- block_content -}}
       </div>
 

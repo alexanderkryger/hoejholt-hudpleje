@@ -18,9 +18,37 @@ Supported variables
 {%- liquid
   assign line_item_type = line_item.product.type | downcase | strip
   assign is_free_gift = false
+  assign gift_value = 0
+  assign gift_swap_variant = false
 
-  if settings.gift_enabled and line_item_type == 'gave'
-    assign is_free_gift = true
+  if line_item_type == 'gave'
+    if settings.gift_enabled or settings.gift_threshold_enabled or settings.gift_choice_enabled
+      assign is_free_gift = true
+    endif
+  endif
+
+  if is_free_gift
+    if line_item.variant.compare_at_price > line_item.variant.price
+      assign gift_value = line_item.variant.compare_at_price
+    elsif settings.gift_value != blank and line_item.product_id == settings.gift_product.id
+      assign gift_value = settings.gift_value | times: 100
+    endif
+
+    if settings.gift_choice_enabled
+      assign gift_swap_product = nil
+
+      if line_item.product_id == settings.gift_choice_product_1.id
+        assign gift_swap_product = settings.gift_choice_product_2
+      elsif line_item.product_id == settings.gift_choice_product_2.id
+        assign gift_swap_product = settings.gift_choice_product_1
+      endif
+
+      assign gift_swap_product_type = gift_swap_product.type | downcase | strip
+
+      if gift_swap_product and gift_swap_product_type == 'gave' and gift_swap_product.selected_or_first_available_variant.available
+        assign gift_swap_variant = gift_swap_product.selected_or_first_available_variant
+      endif
+    endif
   endif
 -%}
 
@@ -49,8 +77,14 @@ Supported variables
                 {%- render 'icon' with 'gift', width: 14 -%}
                 {{- settings.gift_label -}}
                 {%- if line_item.quantity > 1 %} &times;{{ line_item.quantity }}{% endif -%}
-                {%- if settings.gift_value != blank %} &middot; {{ settings.gift_value | times: 100 | money }}{% endif -%}
+                             {%- if gift_value > 0 %} &middot; {{ gift_value | money }}{% endif -%}
               </p>
+
+              {%- if gift_swap_variant -%}
+                <button type="button" class="link text-subdued subheading justify-self-start" data-free-gift-swap data-line-key="{{ line_item.key | escape }}" data-variant-id="{{ gift_swap_variant.id }}">
+                  {{- settings.gift_choice_swap_label | escape }} {{ gift_swap_product.title | escape -}}
+                </button>
+              {%- endif -%}
             {%- endif -%}
 
             {%- if hide_unit_price -%}

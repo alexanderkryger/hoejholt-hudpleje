@@ -19,6 +19,7 @@ Supported variables
 
 {%- assign color_label_list = 'general.label.color' | t | replace: ', ', ',' | downcase | split: ',' -%}
 {%- capture id_prefix -%}facets-{{ form_id }}{%- endcapture -%}
+{%- assign hidden_filters = section.settings.hidden_filters | downcase | replace: ', ', ',' | split: ',' -%}
 
 <facets-form {% if update_on_change %}update-on-change{% endif %} section-id="{{ section.id }}">
   <form id="{{ form_id }}" method="GET" action="{{ request.path }}" class="facets" {% if hash %}scroll-to="{{ hash }}"{% endif %}>
@@ -66,6 +67,10 @@ Supported variables
     {%- endif -%}
 
     {%- for filter in source.filters -%}
+      {%- assign filter_label = filter.label | downcase -%}
+      {%- if hidden_filters contains filter_label -%}
+        {%- continue -%}
+      {%- endif -%}
       {%- if filter.param_name == 'filter.v.availability' -%}
         {%- comment -%}
         IMPLEMENTATION NOTE: we are doing an exception for the availability filter, where we display it differently

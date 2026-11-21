@@ -13,15 +13,66 @@ access to filters.
 -%}
 
 <div class="collection__toolbar">
-  <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: collection.products_count }}</span>
+  {%- liquid
+    assign quick_links_style = section.settings.quick_links_style | default: 'links'
+    assign has_quick_links = false
 
-  {%- if section.settings.show_sort_by or section.settings.show_filters and collection.filters.size > 0 or section.settings.quick_links_menu.links.size > 0 -%}
-    {%- render 'collection-faceting-button', data_source: collection, filter_layout: section.settings.filter_layout, show_count: true, class: 'sm:hidden', context: 'mobile' -%}
-  {%- endif -%}
+    if section.settings.quick_links_menu.links.size > 0
+      assign has_quick_links = true
+      assign menu = section.settings.quick_links_menu
+      assign selected_link = menu.links | where: 'current' | first
+      assign quick_links_title = selected_link.title | default: menu.links.first.title
+    endif
+  -%}
 
-  {%- if section.settings.quick_links_menu.links.size > 0 -%}
-    {%- assign menu = section.settings.quick_links_menu -%}
-    
+  {%- capture quick_links_dropdown -%}
+    {%- if has_quick_links -%}
+      <div class="h-stack gap-3">
+        {%- if quick_links_style == 'dropdown' and section.settings.quick_links_label != blank -%}
+          <span class="subheading sm-max:hidden">{{ section.settings.quick_links_label }}</span>
+        {%- endif -%}
+
+        <div class="relative">
+          {%- if quick_links_style == 'dropdown' -%}
+            {%- render 'button', content: quick_links_title, style: 'outline', size: 'sm', icon: 'chevron-down', aria_controls: 'collection-toolbar-quick-links' -%}
+          {%- else -%}
+            <button type="button" class="h-stack gap-2" aria-controls="collection-toolbar-quick-links" aria-expanded="false">
+              <span class="subheading">{{ quick_links_title }}</span>
+              {%- render 'icon' with 'chevron-down' -%}
+            </button>
+          {%- endif -%}
+
+          <x-popover id="collection-toolbar-quick-links" class="popover color-scheme color-scheme--{{ settings.default_color_scheme.id }}" {% if quick_links_style != 'dropdown' %}preferred-alignment="start"{% endif %} role="dialog">
+            <p slot="header" class="subheading">{{ 'collection.quick_links.navigate_to' | t }}</p>
+
+            <div class="popover__value-list">
+              {%- for link in menu.links -%}
+                <a href="{{ link.url }}" class="popover__value-option subheading">
+                  {{- link.title -}}
+
+                  {%- if link.current -%}
+                    {%- render 'icon' with 'success-checkmark', width: 10 -%}
+                  {%- endif -%}
+                </a>
+              {%- endfor -%}
+            </div>
+          </x-popover>
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endcapture -%}
+
+  <div class="h-stack gap-5">
+    {%- if section.settings.show_products_count -%}
+      <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: collection.products_count }}</span>
+    {%- endif -%}
+
+    {%- if quick_links_style == 'dropdown' -%}
+      {{- quick_links_dropdown -}}
+    {%- endif -%}
+  </div>
+
+  {%- if has_quick_links and quick_links_style != 'dropdown' -%}
     <div class="collection__toolbar-linklist md-max:hidden">
       {%- for link in menu.links -%}
         <a href="{{ link.url }}" class="subheading {% if link.current %}link{% else %}link-reversed{% endif %}">{{ link.title }}</a>
@@ -30,32 +81,19 @@ access to filters.
   {%- endif -%}
 
   <div class="vertically-separated-list">
-    {%- if section.settings.quick_links_menu.links.size > 0 -%}
-      {%- assign menu = section.settings.quick_links_menu -%}
-  
+    {%- unless sticky_filter_button -%}
+      {%- if section.settings.show_sort_by or section.settings.show_filters and collection.filters.size > 0 or has_quick_links -%}
+        {%- render 'collection-faceting-button', data_source: collection, filter_layout: section.settings.filter_layout, show_count: section.settings.show_products_count, class: 'sm:hidden', context: 'mobile' -%}
+
+        {%- if section.settings.show_product_card_size_selector -%}
+          <hr class="divider sm:hidden">
+        {%- endif -%}
+      {%- endif -%}
+    {%- endunless -%}
+
+    {%- if has_quick_links and quick_links_style != 'dropdown' -%}
       <div class="md:hidden">
-        {%- assign selected_link = menu.links | where: 'current' | first -%}
-  
-        <button type="button" class="h-stack gap-2" aria-controls="collection-toolbar-quick-links" aria-expanded="false">
-          <span class="subheading">{{ selected_link.title | default: menu.links.first.title }}</span>
-          {%- render 'icon' with 'chevron-down' -%}
-        </button>
-  
-        <x-popover id="collection-toolbar-quick-links" class="popover color-scheme color-scheme--{{ settings.default_color_scheme.id }}" role="dialog">
-          <p slot="header" class="subheading">{{ 'collection.quick_links.navigate_to' | t }}</p>
-  
-          <div class="popover__value-list">
-            {%- for link in menu.links -%}
-              <a href="{{ link.url }}" class="popover__value-option subheading">
-                {{- link.title -}}
-  
-                {%- if link.current -%}
-                  {%- render 'icon' with 'success-checkmark', width: 10 -%}
-                {%- endif -%}
-              </a>
-            {%- endfor -%}
-          </div>
-        </x-popover>
+        {{- quick_links_dropdown -}}
       </div>
     {%- endif -%}
 

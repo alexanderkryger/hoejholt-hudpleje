@@ -10502,6 +10502,127 @@ product-card.product-card.product-card--bordered.product-card--info-inside.color
   }
 }
 
+/* Glass effect on full-width color scheme bars (countdown-condensed) */
+.color-scheme--glass {
+  background: rgb(var(--background) / .6);
+  box-shadow: inset 0 -1px 0 0 rgb(var(--text-color) / .1);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .color-scheme--glass {
+    background: rgb(var(--background) / .92);
+  }
+}
+
+/* Campaign banner (main-product block) */
+.product-info__block-item[data-block-type="founder-statement"]:has(+ .product-info__block-item[data-block-type="campaign-banner"]:not(:empty)) {
+  margin-block-end: 0;
+}
+
+.product-info__block-item[data-block-type="founder-statement"]:has(+ .product-info__block-item[data-block-type="campaign-banner"]:not(:empty)) .offer-item {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.product-info__block-item[data-block-type="founder-statement"]:not(:empty) + .product-info__block-item[data-block-type="campaign-banner"] {
+  margin-block-start: 0;
+}
+
+.product-info__block-item[data-block-type="founder-statement"]:not(:empty) + .product-info__block-item[data-block-type="campaign-banner"] .campaign-banner {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.campaign-banner__link:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* Launch countdown (main-product block): hide sticky add to cart while buy buttons are hidden */
+.shopify-section:has(.product-info__block-item[data-block-type^="buy-buttons"][hidden]) .product-sticky-add-to-cart {
+  display: none;
+}
+
+/* Launch countdown directly below the Trustpilot rating: attach the two blocks */
+.product-info__block-item[data-block-type="trustpilot-rating"]:has(+ .product-info__block-item[data-block-type="launch-countdown"]:not(:empty)) {
+  margin-block-end: 0;
+}
+
+.product-info__block-item[data-block-type="trustpilot-rating"] + .product-info__block-item[data-block-type="launch-countdown"] {
+  margin-block-start: 0;
+}
+
+.product-info__block-item[data-block-type="trustpilot-rating"] + .product-info__block-item[data-block-type="launch-countdown"] .product-countdown {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+/* Product badge image (custom.product_badge) on product cards */
+.product-card__custom-badge {
+  z-index: 1;
+  pointer-events: none;
+  width: min(4rem, 30%);
+  position: absolute;
+}
+
+.product-card__custom-badge--start, .product-card__custom-badge--end {
+  inset-block-start: var(--product-card-inner-padding);
+}
+
+.product-card__custom-badge--bottom-start, .product-card__custom-badge--bottom-end {
+  inset-block-end: var(--product-card-inner-padding);
+}
+
+.product-card__custom-badge--start, .product-card__custom-badge--bottom-start {
+  inset-inline-start: var(--product-card-inner-padding);
+}
+
+.product-card__custom-badge--end, .product-card__custom-badge--bottom-end {
+  inset-inline-end: var(--product-card-inner-padding);
+}
+
+.product-card__custom-badge--glass, .product-gallery__custom-badge--glass {
+  background: rgb(var(--product-badge-background) / var(--product-badge-opacity));
+  border-radius: var(--rounded-full);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  overflow: hidden;
+}
+
+:is(.product-card__custom-badge--glass, .product-gallery__custom-badge--glass) img {
+  width: 100%;
+  display: block;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__custom-badge {
+    width: min(5rem, 30%);
+  }
+}
+
+/* Launch countdown: left-align the button text and stack text above the timer on mobile */
+launch-countdown .link {
+  text-align: start;
+}
+
+@media screen and (max-width: 699px) {
+  launch-countdown.product-countdown {
+    column-gap: 1rem;
+  }
+
+  launch-countdown .product-countdown__text {
+    font-size: .875rem;
+    line-height: 1.3;
+  }
+
+  launch-countdown .link {
+    font-size: .75rem;
+  }
+}
+
 /* Tillæg price list (text-with-media block) */
 .tillaeg-list__item {
   padding-block: 0.875rem;
@@ -10527,4 +10648,36 @@ product-card.product-card.product-card--bordered.product-card--info-inside.color
   width: 1em;
   height: 0.15em;
   border-radius: var(--rounded-full);
+}
+
+.product-gallery__media > .product-gallery__option-overlay {
+  z-index: 1;
+  pointer-events: none;
+  container-type: inline-size;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.product-gallery__option-overlay > span {
+  color: var(--option-overlay-color);
+    font-size: calc(var(--option-overlay-size) * var(--option-overlay-scale, 1));
+  white-space: nowrap;
+  line-height: 1;
+  position: absolute;
+  inset-block-start: var(--option-overlay-y);
+  inset-inline-start: var(--option-overlay-x);
+  transform: translateY(-100%);
+}
+
+option-slider.price-range {
+  padding-block-start: .75rem;
+}
+
+option-slider .range-group {
+  --range-track-height: 4px;
+}
+
+option-slider .range {
+  --range-thumb-size: 20px;
 }

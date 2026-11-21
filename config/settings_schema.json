@@ -1101,6 +1101,63 @@
       },
       {
         "type": "checkbox",
+        "id": "product_card_show_product_badge",
+        "label": "t:theme_settings.product_card.show_product_badge",
+        "info": "t:theme_settings.product_card.show_product_badge_info",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "product_card_product_badge_position",
+        "label": "t:theme_settings.product_card.product_badge_position",
+        "options": [
+          {
+            "value": "start",
+            "label": "t:global.position.top_left"
+          },
+          {
+            "value": "end",
+            "label": "t:global.position.top_right"
+          },
+          {
+            "value": "bottom-start",
+            "label": "t:global.position.bottom_left"
+          },
+          {
+            "value": "bottom-end",
+            "label": "t:global.position.bottom_right"
+          }
+        ],
+        "default": "end",
+        "visible_if": "{{ settings.product_card_show_product_badge }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "product_card_product_badge_glass",
+        "label": "t:theme_settings.product_card.product_badge_glass",
+        "info": "t:theme_settings.product_card.product_badge_glass_info",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "product_card_product_badge_background",
+        "label": "t:theme_settings.product_card.product_badge_background",
+        "default": "#3a3330",
+        "visible_if": "{{ settings.product_card_product_badge_glass }}"
+      },
+      {
+        "type": "range",
+        "id": "product_card_product_badge_opacity",
+        "label": "t:theme_settings.product_card.product_badge_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "unit": "%",
+        "default": 60,
+        "visible_if": "{{ settings.product_card_product_badge_glass }}"
+      },
+      {
+        "type": "checkbox",
         "id": "product_card_show_discount",
         "label": "t:theme_settings.product_card.show_discount_badge",
         "default": true
@@ -1301,8 +1358,20 @@
         "type": "text",
         "id": "gift_label",
         "label": "Gavetekst",
-        "default": "Gratis gave",
-        "visible_if": "{{ settings.gift_enabled }}"
+        "default": "Gratis gave"
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_celebration_enabled",
+        "label": "Vis konfetti og besked, når en gave tilføjes",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "gift_celebration_text",
+        "label": "Besked",
+        "default": "Gratis gave tilføjet til kurven",
+        "visible_if": "{{ settings.gift_celebration_enabled }}"
       },
       {
         "type": "text",
@@ -1311,6 +1380,88 @@
         "info": "Angiv beløbet i butikkens hovedvaluta uden valutakode. F.eks. 299",
         "placeholder": "F.eks.: 299",
         "visible_if": "{{ settings.gift_enabled }}"
+      },
+      {
+        "type": "header",
+        "content": "Gave ved kurvbeløb"
+      },
+      {
+        "type": "paragraph",
+        "content": "Giver én gave pr. ordre, når kurvens værdi når minimumsbeløbet. Gavekort og gaver tæller ikke med i beløbet."
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_threshold_enabled",
+        "label": "Aktivér gave ved kurvbeløb",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "gift_threshold_amount",
+        "label": "Minimumsbeløb",
+        "info": "Angiv beløbet i butikkens hovedvaluta uden valutakode. F.eks. 750",
+        "placeholder": "F.eks.: 750",
+        "default": "750",
+        "visible_if": "{{ settings.gift_threshold_enabled }}"
+      },
+      {
+        "type": "product",
+        "id": "gift_threshold_product",
+        "label": "Gaveprodukt",
+        "info": "Produktet skal have produkttypen \"gave\", ellers er reglen inaktiv.",
+        "visible_if": "{{ settings.gift_threshold_enabled }}"
+      },
+      {
+        "type": "header",
+        "content": "Valgfri gave ved køb af bestemt produkt"
+      },
+      {
+        "type": "paragraph",
+        "content": "Giver én gave pr. stk., når det valgte produkt købes i en variant til minimumsprisen eller derover. Kunden kan skifte mellem de to gaver i kurven. Gave 1 lægges i kurven som standard."
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_choice_enabled",
+        "label": "Aktivér valgfri gave",
+        "default": false
+      },
+      {
+        "type": "product",
+        "id": "gift_choice_trigger_product",
+        "label": "Produkt der udløser gaven",
+        "info": "F.eks. Gavekort VIP.",
+        "visible_if": "{{ settings.gift_choice_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "gift_choice_min_price",
+        "label": "Minimumspris for varianten",
+        "info": "Angiv beløbet i butikkens hovedvaluta uden valutakode. F.eks. 1000",
+        "placeholder": "F.eks.: 1000",
+        "default": "1000",
+        "visible_if": "{{ settings.gift_choice_enabled }}"
+      },
+      {
+        "type": "product",
+        "id": "gift_choice_product_1",
+        "label": "Gave 1 (standard)",
+        "info": "Produktet skal have produkttypen \"gave\".",
+        "visible_if": "{{ settings.gift_choice_enabled }}"
+      },
+      {
+        "type": "product",
+        "id": "gift_choice_product_2",
+        "label": "Gave 2",
+        "info": "Produktet skal have produkttypen \"gave\".",
+        "visible_if": "{{ settings.gift_choice_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "gift_choice_swap_label",
+        "label": "Tekst på skift-knap",
+        "info": "Efterfølges af navnet på den anden gave.",
+        "default": "Skift til",
+        "visible_if": "{{ settings.gift_choice_enabled }}"
       }
     ]
   },

@@ -2,6 +2,22 @@
 
 <html lang="{{ request.locale.iso_code }}" dir="{% render 'direction' %}">
   <head>
+    {%- liquid
+  assign redirect_gift_product = false
+
+  if request.page_type == 'product' and request.design_mode == false
+    assign current_product_type = product.type | downcase | strip
+
+    if current_product_type == 'gave'
+      assign redirect_gift_product = true
+    endif
+  endif
+-%}
+
+{%- if redirect_gift_product -%}
+  <meta name="robots" content="noindex">
+  <script>window.location.replace({{ routes.root_url | json }});</script>
+{%- endif -%}
 
 
       <!-- Google Tag Manager -->
@@ -108,7 +124,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
        {%- section 'free-gift' -%}
     {%- render 'free-gift' -%}
 
-      <script src="https://partnertrackshopify.dk/js/register.js" async></script>
+      {% comment %}<script src="https://partnertrackshopify.dk/js/register.js" async></script>{% endcomment %}
 
   <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TQ9PJBWB"

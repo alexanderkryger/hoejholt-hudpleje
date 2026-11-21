@@ -6381,6 +6381,44 @@ import { Delegate as Delegate11 } from "vendor";
     table.outerHTML = '<div class="table-scroller">' + table.outerHTML + "</div>";
   });
 })();
+
+// Launch countdown (main-product block): reveals the buy buttons when the countdown expires
+if (!window.customElements.get("launch-countdown")) {
+  window.customElements.define("launch-countdown", class extends HTMLElement {
+    connectedCallback() {
+      this._productInfo = this.closest(".product-info");
+      this._expirationDate = new Date(this.getAttribute("expires-at"));
+      this._schedule();
+    }
+
+    disconnectedCallback() {
+      clearTimeout(this._timeout);
+
+      if (this._expirationDate <= new Date()) {
+        this._revealBuyButtons();
+      }
+    }
+
+    _schedule() {
+      const remaining = this._expirationDate - new Date();
+
+      if (isNaN(remaining)) {
+        return;
+      }
+
+      if (remaining <= 0) {
+        return this._revealBuyButtons();
+      }
+
+      // setTimeout cannot wait longer than ~24.8 days, so long countdowns are re-scheduled
+      this._timeout = setTimeout(this._schedule.bind(this), Math.min(remaining, 2147483647));
+    }
+
+    _revealBuyButtons() {
+      this._productInfo?.querySelectorAll('.product-info__block-item[data-block-type^="buy-buttons"][hidden]').forEach((element) => element.hidden = false);
+    }
+  });
+}
 export {
   AccordionDisclosure,
   AccountLogin,

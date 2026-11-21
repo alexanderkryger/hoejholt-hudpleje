@@ -12,6 +12,7 @@ Supported variables
 
 * primary_menu
 * secondary_menu: show secondary links after the main links
+* mobile_button: optional pre-rendered button shown below the primary menu (mobile only)
 * show_nested_menu_indicator: if true, it will show an arrow for menu with nested links
 * show_country_selector: if set to true, the country selector will be displayed at the bottom
 * show_country_name: if set to true, the country name will be displayed along the currency
@@ -69,6 +70,16 @@ Supported variables
             </li>
           {%- endfor -%}
         </ul>
+      {%- endif -%}
+
+      {%- if mobile_button != blank -%}
+        {%- if primary_menu.links.size > 0 -%}
+          <hr class="menu-drawer__separator md:hidden">
+        {%- endif -%}
+
+        <div class="md:hidden">
+          {{- mobile_button -}}
+        </div>
       {%- endif -%}
 
       {%- if primary_menu.links.size > 0 and secondary_menu.links.size > 0 -%}

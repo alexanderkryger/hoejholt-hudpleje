@@ -28,7 +28,13 @@ None
 -%}
 
 {%- if show_mobile_floating_button -%}
-  <collection-facets-floating-button class="collection__floating-button md:hidden">
-    {%- render 'button', type: 'button', content: button_content, icon: 'filters', icon_position: 'before_text', stretch: true, aria_controls: 'facets-drawer' -%}
-  </collection-facets-floating-button>
+  {%- if sticky -%}
+    <div class="collection__floating-button collection__floating-button--sticky">
+      {%- render 'button', type: 'button', content: button_content, icon: 'filters', icon_position: 'before_text', stretch: true, aria_controls: 'facets-drawer' -%}
+    </div>
+  {%- else -%}
+    <collection-facets-floating-button class="collection__floating-button md:hidden">
+      {%- render 'button', type: 'button', content: button_content, icon: 'filters', icon_position: 'before_text', stretch: true, aria_controls: 'facets-drawer' -%}
+    </collection-facets-floating-button>
+  {%- endif -%}
 {%- endif -%}

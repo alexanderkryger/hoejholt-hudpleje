@@ -529,6 +529,13 @@
       "badges_category": "Badges",
       "show_badges_vertically": "Show vertically",
       "show_sold_out_badge": "Show sold out badge",
+      "show_product_badge": "Show product badge image",
+      "show_product_badge_info": "Shows the image from the product metafield custom.product_badge on the product card.",
+      "product_badge_position": "Product badge position",
+      "product_badge_glass": "Glass effect on product badge",
+      "product_badge_glass_info": "Adds a round, semi-transparent background behind the badge on product cards and in the product gallery. Use badge images without their own background.",
+      "product_badge_background": "Product badge background",
+      "product_badge_opacity": "Product badge background opacity",
       "show_discount_badge": "Show discount badge",
       "show_discount_as": "Show discount as...",
       "show_discount_as_options": {
@@ -871,6 +878,8 @@
       "show_timer_borders": "Show borders",
       "animate_timer_numbers": "Animate numbers",
       "show_inline_timer": "Show inline timer",
+      "glass_effect": "Glass effect",
+      "glass_effect_info": "Makes the bar semi-transparent with a background blur and keeps it sticky, so the page scrolls behind it.",
       "button_category": "Button",
       "connect_button_with_heading": "Connect with heading",
       "caption_category": "Image caption",
@@ -1205,9 +1214,17 @@
     "main_collection": {
       "name": "Collection page",
       "customization_info": "Change product card appearance and spacing in the general theme settings.",
+      "show_products_count": "Show products count",
       "show_product_card_size_selector": "Show product card size selector",
       "quick_links": "Quick links",
       "quick_links_info": "This menu won't show dropdown items. For best results, limit the links to 3 or 4 items.",
+      "quick_links_style": "Quick links style (desktop)",
+      "quick_links_style_options": {
+        "links": "Inline links",
+        "dropdown": "Dropdown"
+      },
+      "quick_links_label": "Dropdown label",
+      "quick_links_label_info": "Shown before the dropdown, e.g. \"Brands\". Leave empty to hide.",
       "card_highlight_category": "Highlight product",
       "card_highlight_category_info": "Highlight one or multiple products by using metafields. [Learn more](https://support.maestrooo.com/article/819-highlighting-a-product-card-in-collection-pages).",
       "blocks": {
@@ -1562,6 +1579,32 @@
           "author": "Author",
           "show_quotation_mark": "Show quotation mark",
           "text_size": "Text size"
+        },
+        "campaign_banner": {
+          "name": "Campaign banner",
+          "instructions": "The banner is only shown on products where the metafield is true. Leave the metafield empty to show it on all products.",
+          "metafield": "Metafield",
+          "metafield_info": "Format: namespace.key (e.g. custom.trapperabat). Must be a true/false metafield.",
+          "image_size_recommendation": "1200 x 500px .jpg recommended",
+          "footer_text": "Footer text"
+        },
+        "launch_countdown": {
+          "name": "Launch countdown",
+          "instructions": "Counts down to the date in a product metafield. The block is hidden automatically on products without a date and once the date has passed.",
+          "metafield": "Metafield",
+          "metafield_info": "Format: namespace.key (e.g. custom.countdown). Must be a date and time metafield.",
+          "hide_buy_buttons": "Hide buy buttons until the countdown ends",
+          "hide_buy_buttons_info": "The buy buttons and sticky add to cart reappear automatically when the countdown reaches zero.",
+          "form_category": "Sign-up form",
+          "form_type": "Form",
+          "form_type_info": "For an app form, place the app block directly below this block. It then opens in a modal when the button is clicked.",
+          "form_type_options": {
+            "newsletter": "Newsletter sign-up",
+            "app_block": "App block below"
+          },
+          "submit_text": "Submit button text",
+          "customer_tags": "Customer tags",
+          "customer_tags_info": "Comma-separated. Use [handle] to insert the product handle."
         },
         "authorized_reseller": {
           "name": "Authorized reseller",
